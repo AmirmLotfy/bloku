@@ -1,0 +1,42 @@
+{
+  "en": {
+    "scope": "This policy describes BLOKU 2.0. For earlier extension versions, also read the legacy notes below.",
+    "legacyTitle": "Earlier versions and records",
+    "legacy": "Earlier versions may retain license or device identifiers and attempt requests to the legacy license-validation service. Their counters are estimates. Do not assume that BLOKU 2.0's data practices apply to earlier versions. Previous payment and support records are separate from local extension data. For questions about these records or earlier versions, email support@bloku.app."
+  },
+  "ar": {
+    "scope": "تصف هذه السياسة ممارسات BLOKU 2.0. ولإصدارات الإضافة الأقدم، يُرجى أيضًا قراءة الملاحظات أدناه.",
+    "legacyTitle": "الإصدارات السابقة والسجلات",
+    "legacy": "قد تحتفظ الإصدارات السابقة بمعرّفات الترخيص أو الجهاز، وقد تحاول إرسال طلبات إلى خدمة التحقق القديمة من التراخيص. وعداداتها تقديرية. لا تفترض أن ممارسات البيانات الخاصة بـ BLOKU 2.0 تنطبق على الإصدارات السابقة. سجلات الدفع والدعم السابقة منفصلة عن بيانات الإضافة المحلية. للاستفسار عن هذه السجلات أو الإصدارات السابقة، راسل support@bloku.app."
+  },
+  "es": {
+    "scope": "Esta política describe BLOKU 2.0. Para versiones anteriores de la extensión, consulta también las notas siguientes.",
+    "legacyTitle": "Versiones y registros anteriores",
+    "legacy": "Las versiones anteriores pueden conservar identificadores de licencia o de dispositivo e intentar enviar solicitudes al antiguo servicio de validación de licencias. Sus contadores son estimaciones. No des por hecho que las prácticas de datos de BLOKU 2.0 se aplican a versiones anteriores. Los registros de pagos y soporte anteriores están separados de los datos locales de la extensión. Para consultas sobre estos registros o versiones anteriores, escribe a support@bloku.app."
+  },
+  "pt_BR": {
+    "scope": "Esta política descreve o BLOKU 2.0. Para versões anteriores da extensão, leia também as observações abaixo.",
+    "legacyTitle": "Versões e registros anteriores",
+    "legacy": "Versões anteriores podem manter identificadores de licença ou dispositivo e tentar enviar solicitações ao antigo serviço de validação de licenças. Seus contadores são estimativas. Não presuma que as práticas de dados do BLOKU 2.0 se aplicam às versões anteriores. Os registros anteriores de pagamentos e suporte são separados dos dados locais da extensão. Para dúvidas sobre esses registros ou versões anteriores, escreva para support@bloku.app."
+  },
+  "fr": {
+    "scope": "Cette politique décrit BLOKU 2.0. Pour les versions antérieures de l’extension, consultez aussi les précisions ci-dessous.",
+    "legacyTitle": "Anciennes versions et anciens dossiers",
+    "legacy": "Les versions antérieures peuvent conserver des identifiants de licence ou d’appareil et tenter d’envoyer des requêtes à l’ancien service de validation des licences. Leurs compteurs sont des estimations. Ne présumez pas que les pratiques de BLOKU 2.0 en matière de données s’appliquent aux versions antérieures. Les anciens dossiers de paiement et d’assistance sont distincts des données locales de l’extension. Pour toute question sur ces dossiers ou les anciennes versions, écrivez à support@bloku.app."
+  },
+  "de": {
+    "scope": "Diese Datenschutzerklärung beschreibt BLOKU 2.0. Für frühere Versionen der Erweiterung gelten zusätzlich die Hinweise unten.",
+    "legacyTitle": "Frühere Versionen und Unterlagen",
+    "legacy": "Frühere Versionen können Lizenz- oder Gerätekennungen speichern und Anfragen an den früheren Dienst zur Lizenzprüfung versuchen. Ihre Zähler liefern Schätzwerte. Gehen Sie nicht davon aus, dass die Datenverarbeitung von BLOKU 2.0 auch für frühere Versionen gilt. Frühere Zahlungs- und Supportunterlagen sind von den lokalen Daten der Erweiterung getrennt. Bei Fragen zu diesen Unterlagen oder früheren Versionen schreiben Sie an support@bloku.app."
+  },
+  "ja": {
+    "scope": "このポリシーはBLOKU 2.0について説明します。旧バージョンの拡張機能については、下記の注意事項もご確認ください。",
+    "legacyTitle": "旧バージョンと過去の記録",
+    "legacy": "旧バージョンでは、ライセンスや端末の識別子が保存され、旧ライセンス認証サービスへのリクエストが試行される場合があります。旧バージョンのカウンターは推定値です。BLOKU 2.0のデータの取り扱いが旧バージョンにも適用されるとは限りません。過去の決済・サポート記録は、拡張機能内のローカルデータとは別に扱われます。これらの記録や旧バージョンについては、support@bloku.appへお問い合わせください。"
+  },
+  "hi": {
+    "scope": "यह नीति BLOKU 2.0 के बारे में बताती है। एक्सटेंशन के पुराने संस्करणों के लिए नीचे दी गई जानकारी भी पढ़ें।",
+    "legacyTitle": "पुराने संस्करण और रिकॉर्ड",
+    "legacy": "पुराने संस्करण लाइसेंस या डिवाइस के पहचानकर्ता रख सकते हैं और पुरानी लाइसेंस सत्यापन सेवा को अनुरोध भेजने का प्रयास कर सकते हैं। उनके काउंटर अनुमान दिखाते हैं। यह न मानें कि BLOKU 2.0 के डेटा संबंधी तरीके पुराने संस्करणों पर भी लागू होते हैं। भुगतान और सहायता के पुराने रिकॉर्ड, एक्सटेंशन के स्थानीय डेटा से अलग हैं। इन रिकॉर्ड या पुराने संस्करणों के बारे में सवालों के लिए support@bloku.app पर ईमेल करें।"
+  }
+}

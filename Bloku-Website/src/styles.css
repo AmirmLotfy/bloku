@@ -53,6 +53,9 @@
 * {
   box-sizing: border-box;
 }
+.release-availability{margin-block:1.5rem 0;padding:1rem 1.25rem;border:1px solid var(--border);border-inline-start:3px solid var(--accent);border-radius:12px;background:var(--soft);color:var(--ink);font-size:.9rem}
+.release-availability p{margin:0;overflow-wrap:anywhere}
+.release-availability p+p{margin-block-start:.35rem;color:var(--muted)}
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 104px;
