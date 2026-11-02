@@ -33,7 +33,7 @@ for (const file of await readdir(path.join(root, 'src/locales'))) {
   const text = JSON.parse(await readFile(path.join(root, `src/locales/${file}`), 'utf8'));
   if (!text.name || text.name.length > 75 || !text.summary || text.summary.length > 132) throw new Error(`${locale}: localized manifest text exceeds Chrome limits.`);
   await mkdir(path.join(output, `_locales/${locale}`), { recursive: true });
-  await writeFile(path.join(output, `_locales/${locale}/messages.json`), JSON.stringify({ extensionName: { message: text.name }, extensionDescription: { message: text.summary }, hideElement: { message: text.picker } }, null, 2));
+  await writeFile(path.join(output, `_locales/${locale}/messages.json`), JSON.stringify({ extensionName: { message: text.name }, extensionDescription: { message: text.summary }, hideElement: { message: text.picker }, restoreElements: { message: text.restoreSite }, openPopup: { message: text.openPopup }, toggleProtection: { message: text.toggleProtection } }, null, 2));
 }
 await cp(path.join(root, '../LICENSE'), path.join(output, 'LICENSE'));
 await cp(path.join(root, 'NOTICE.v2.md'), path.join(output, 'NOTICE.md'));

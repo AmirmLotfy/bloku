@@ -16,8 +16,8 @@
   "declarative_net_request": {"rule_resources": []},
   "web_accessible_resources": [{"resources": ["engine/war/redirects/*", "engine/assistant.js", "locales/*.json", "consent.js"], "matches": ["http://*/*", "https://*/*"]}],
   "commands": {
-    "_execute_action": {"suggested_key": {"default": "Ctrl+Shift+B", "mac": "Command+Shift+B"}, "description": "Open BLOKU"},
-    "toggle-protection": {"suggested_key": {"default": "Alt+Shift+B"}, "description": "Toggle ad protection"}
+    "_execute_action": {"suggested_key": {"default": "Ctrl+Shift+K", "mac": "Command+Shift+K"}, "description": "__MSG_openPopup__"},
+    "toggle-protection": {"suggested_key": {"default": "Alt+Shift+P"}, "description": "__MSG_toggleProtection__"}
   },
   "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'self'"}
 }

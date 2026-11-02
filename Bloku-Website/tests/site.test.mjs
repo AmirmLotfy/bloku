@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 import { JSDOM } from "jsdom";
 import {
   product,
@@ -139,7 +140,7 @@ test("every local navigation destination and fragment resolves, including help a
   }
 });
 
-test("no checkout, analytics, fabricated rating, search schema, or active donation path is published", () => {
+test("no legacy checkout, analytics, fabricated rating, search schema, or unexpected payment integration is published", () => {
   for (const route of manifest) {
     const doc = documents.get(route.path);
     assert.doesNotMatch(
@@ -167,6 +168,76 @@ test("no checkout, analytics, fabricated rating, search schema, or active donati
         0,
         "No feedback form without a backend",
       );
+  }
+});
+
+test("all locales expose accurate compatibility, source and optional external support without payment embeds", () => {
+  assert.equal(product.minimumChromeVersion, 145);
+  assert.equal(product.license, "GPL-3.0-only");
+  assert.equal(product.sourceUrl, "https://github.com/AmirmLotfy/bloku");
+  assert.equal(product.fundingUrl, "https://www.paypal.com/ncp/payment/H2Y4B9EM6CF5C");
+  assert.equal("sponsorsUrl" in product, false);
+  for (const route of manifest) {
+    const doc = documents.get(route.path);
+    const copy = copies[route.locale];
+    const source = doc.querySelector(`footer a[href="${product.sourceUrl}"]`);
+    assert.equal(source?.textContent, copy.details.sourceLink, route.path);
+    const funding = [...doc.querySelectorAll(`a[href="${product.fundingUrl}"]`)];
+    assert.equal(funding.length, route.page === "support" ? 2 : 1, route.path);
+    for (const link of funding) {
+      assert.equal(link.textContent, copy.details.fundingTitle, route.path);
+      assert.equal(link.target, "_blank");
+      assert.ok(link.relList.contains("noopener"));
+      assert.ok(link.relList.contains("noreferrer"));
+    }
+    assert.equal(doc.querySelector(".compatibility")?.textContent, copy.details.compatibility.replace("{version}", "145"));
+    assert.equal(doc.querySelectorAll("iframe, form, script[src*='paypal'], link[href*='paypal']").length, 0, route.path);
+    if (route.page === "support") {
+      const section = doc.querySelector("main #optional-support");
+      assert.ok(section?.textContent.includes(copy.details.fundingBody));
+      assert.ok(!section.querySelector(".button-primary"), "Support must stay a secondary text link");
+    }
+    if (route.page === "privacy") {
+      assert.ok(doc.querySelector("main").textContent.includes(copy.details.fundingPrivacyBody));
+      assert.equal(doc.querySelector(`main a[href="${product.fundingPrivacyUrl}"]`)?.textContent, copy.details.paypalPolicy);
+    }
+    if (route.page === "terms") assert.ok(doc.querySelector("main").textContent.includes(copy.details.licenseBody));
+    if (route.page === "home") assert.match(doc.title, /Chrome/);
+  }
+});
+
+test("brand derivatives retain the original artwork provenance and fit their published use", async () => {
+  const provenance = JSON.parse(await fs.readFile(path.join(root, "scripts/branding-provenance.json"), "utf8"));
+  const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
+  const original = await fs.readFile(path.join(root, provenance.source.path));
+  assert.equal(digest(original), "f191e688ae0f8bbbff20bd9796ae68c60b73adb8030a34110d00b9d4b5768331");
+  assert.equal(provenance.source.sha256, digest(original));
+  let totalBytes = 0;
+  for (const asset of provenance.files) {
+    const bytes = await fs.readFile(path.join(root, asset.path));
+    const published = await fs.readFile(path.join(root, "dist", asset.path.replace(/^public\//, "")));
+    assert.deepEqual(published, bytes, asset.path);
+    assert.equal(digest(bytes), asset.sha256, asset.path);
+    totalBytes += bytes.length;
+    if (asset.path.endsWith(".png")) {
+      assert.equal(bytes.subarray(1, 4).toString(), "PNG");
+      assert.equal(bytes.readUInt32BE(16), asset.width);
+      assert.equal(bytes.readUInt32BE(20), asset.height);
+    } else {
+      assert.equal(bytes.readUInt16LE(2), 1, "ICO image type");
+      assert.equal(bytes[6], 32);
+      assert.equal(bytes[7], 32);
+    }
+  }
+  assert.ok(totalBytes < 50000, "Branding assets must remain smaller than one former logo PNG");
+  for (const doc of documents.values()) {
+    assert.equal(doc.querySelectorAll('img[src*="bloku-logo-light"], img[src*="bloku-logo-dark"]').length, 0);
+    for (const image of doc.querySelectorAll('img[src="/bloku-logo.png"]')) {
+      assert.ok(Number(image.width) * 3 <= 204, "Logo must retain 3× pixels for its largest display size");
+      assert.equal(image.width, image.height);
+    }
+    assert.equal(doc.querySelector('link[rel="icon"][type="image/png"]')?.getAttribute("sizes"), "32x32");
+    assert.equal(doc.querySelector('link[rel="apple-touch-icon"]')?.getAttribute("href"), "/apple-touch-icon.png");
   }
 });
 

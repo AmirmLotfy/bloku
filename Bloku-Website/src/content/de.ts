@@ -1,9 +1,19 @@
 import type { Copy } from "../types";
 const de: Copy = {
   meta: {
-    homeTitle: "BLOKU — Weniger Ablenkung. Mehr dein Web.",
+    homeTitle: "BLOKU — Kostenloser Chrome-Werbeblocker und Fokuswerkzeuge",
     homeDescription:
       "Kostenloser Werbeblocker für Chrome mit Tracker-Blockierung, Datenschutzeinstellungen und Werkzeugen gegen Ablenkungen. Ohne Konto oder Bezahlstufe.",
+  },
+  details: {
+    compatibility: "Für Chrome auf dem Computer ab Version {version}.",
+    sourceLink: "Quellcode · GPL-3.0",
+    licenseBody: "Die BLOKU-Software ist Open Source unter GPL-3.0-only. Das Quellcode-Repository enthält die Lizenz und Hinweise zu Drittanbietern. Der Name und die Grafiken von BLOKU bleiben Markenbestandteile.",
+    fundingTitle: "BLOKU unterstützen",
+    fundingBody: "Freiwillige Unterstützung hilft bei der Pflege von BLOKU. Alle Funktionen bleiben kostenlos; Unterstützung bietet keine zusätzlichen Funktionen oder Vorteile. Wähle auf PayPal einen eigenen einmaligen Betrag in EUR. PayPal verarbeitet die Zahlung nach seinen Richtlinien; Gebühren oder Währungsumrechnung können anfallen.",
+    fundingPrivacyTitle: "Freiwillige Unterstützung über PayPal",
+    fundingPrivacyBody: "Der Unterstützungslink führt nur dann zu PayPal, wenn du ihn auswählst. Diese Website lädt keine Zahlungsskripte oder Formulare von PayPal. PayPal verarbeitet die Zahlung nach seinen Richtlinien und kann uns Zahler- und Transaktionsdaten zur Verwaltung der Unterstützung und notwendiger Unterlagen mitteilen. Du wählst den Betrag; Gebühren oder Währungsumrechnung können anfallen. Unterstützung verändert den Zugang zu BLOKU-Funktionen nicht.",
+    paypalPolicy: "PayPal-Datenschutzrichtlinie",
   },
   nav: {
     features: "Funktionen",
@@ -32,7 +42,7 @@ const de: Copy = {
     demoTitle: "Deine Aufmerksamkeit gehört dir.",
     demoBody:
       "Probiere dieses interaktive Beispiel aus. Schalte den Schutz ein und blende Ablenkungen aus. Der Inhalt bleibt.",
-    featureEyebrow: "Kleine Erweiterung. Nützliche Werkzeuge.",
+    featureEyebrow: "Dein Browser. Deine Kontrolle.",
     featureTitle: "Behalte die guten Seiten.",
     featureIntro:
       "Alle Werkzeuge sind dabei. Beginne mit dem Werbeblocker und wähle die Einstellungen, die zu dir passen.",
@@ -193,7 +203,7 @@ const de: Copy = {
     troubleshooting: [
       {
         title: "Eine Website funktioniert nicht richtig",
-        body: "Pausiere BLOKU für diese Website und lade neu. Hilft das, erlaube die Website oder schalte Funktionen einzeln aus, um die Ursache zu finden.",
+        body: "Pausiere BLOKU für diese Website. Speichere zuerst deine Arbeit und wähle dann „Seite neu laden“ im BLOKU-Popup. Damit die Werbeblockierung vollständig pausiert und Änderungen an ausgeblendeten Elementen übernommen werden, kann ein Neuladen nötig sein, auch nach späteren Filteränderungen, besonders bei bereits geöffneten eingebetteten Seiten. Hilft das, erlaube die Website oder schalte Funktionen einzeln aus, um die Ursache zu finden. Fokusbeschränkungen gelten weiterhin.",
       },
       {
         title: "Ich sehe noch Werbung",
@@ -212,7 +222,7 @@ const de: Copy = {
     sections: [
       {
         title: "Was die Erweiterung speichert",
-        body: "BLOKU verarbeitet Website-Adressen, den Kontext von Netzwerkanfragen und Frames sowie Seiteninhalte lokal, um Werbung und Tracker zu filtern, Elemente auszublenden und deine Datenschutz- und Fokuseinstellungen anzuwenden. Die Filterbibliothek beobachtet Anfragen und Navigation vorübergehend; dauerhafte Anfrageprotokolle und Telemetrie sind deaktiviert. Der Browser speichert Einstellungen, Filterzustand, Website-Ausnahmen, gespeicherte Selektoren, lokale Regeln, Profile und Sitzungsfristen. Tägliche Zeitbudgets verwenden nur beobachtete aktive Zeit auf konfigurierten Websites; Inaktivität, nicht fokussierte Fenster und lange Beobachtungslücken zählen nicht. Standardmäßig bleiben nur die heute für Zeitbudgets benötigten Zähler erhalten. Der optionale lokale Verlauf speichert Übersichten bis zu 90 Tage; beim Ausschalten werden ältere Übersichten gelöscht.",
+        body: "BLOKU verarbeitet Website-Adressen, den Kontext von Netzwerkanfragen und Frames sowie Seiteninhalte lokal, um Werbung und Tracker zu filtern, Elemente auszublenden und deine Datenschutz- und Fokuseinstellungen anzuwenden. Die Filterbibliothek beobachtet Anfragen und Navigation vorübergehend; dauerhafte Anfrageprotokolle und Telemetrie sind deaktiviert. Der Browser speichert Einstellungen, Filterzustand, Website-Ausnahmen, gespeicherte Selektoren, lokale Regeln, Profile und Sitzungsfristen. Tägliche Zeitbudgets verwenden nur beobachtete aktive Zeit auf konfigurierten Websites; Inaktivität, nicht fokussierte Fenster und lange Beobachtungslücken zählen nicht. Standardmäßig bleiben nur die heute für Zeitbudgets benötigten Zähler erhalten. Der optionale lokale Verlauf speichert Übersichten bis zu 90 Tage; beim Ausschalten werden ältere Übersichten gelöscht. Die Filterbibliothek verarbeitet außerdem vorübergehend Anfrage- und Antwortheader. Diese können Cookie- und Set-Cookie-Werte mit Sitzungskennungen enthalten. Die Daten werden lokal verarbeitet, weder als Anfrageprotokolle gespeichert noch von BLOKU hochgeladen und nicht zur Änderung von Cookies verwendet.",
       },
       {
         title: "Was die Erweiterung sendet",
@@ -220,7 +230,7 @@ const de: Copy = {
       },
       {
         title: "Die Website",
-        body: "Diese Website lädt weder Google Analytics noch andere Analyseskripte. Sie speichert dein Farbschema im Browser. Der Hosting-Anbieter verarbeitet die üblichen Anfragedaten, um die Website bereitzustellen. Externe Dienste haben eigene Richtlinien.",
+        body: "Diese Website lädt weder Google Analytics noch andere Analyseskripte. Sie speichert dein Farbschema im Browser. Der Hosting-Anbieter verarbeitet die üblichen Anfragedaten, um die Website bereitzustellen. Externe Dienste haben eigene Richtlinien. Chrome öffnet nach einer Neuinstallation automatisch die Willkommensseite dieser Website und nach dem Deinstallieren von BLOKU die Abschiedsseite. Bei diesen getrennten Websitebesuchen erhält der Hosting-Anbieter übliche Anfragemetadaten wie IP-Adresse, Anfrageheader des Browsers und Zugriffszeit. BLOKU hängt keine Kennungen, besuchten Website-Adressen, Einstellungen oder lokalen Aktivitäten an diese URLs an. Diese Besuche sind vom lokal verarbeiteten Browserverlauf getrennt; BLOKU erfordert weder Konto noch Lizenz.",
       },
       {
         title: "Support und frühere Zahlungen",
@@ -324,7 +334,7 @@ const de: Copy = {
     rights: "Alle Rechte vorbehalten.",
     version: "Version 2.0",
     allFree: "Alle Funktionen kostenlos.",
-    updated: "Aktualisiert am 1. November 2026",
+    updated: "Aktualisiert am 2. November 2026",
   },
 };
 export default de;

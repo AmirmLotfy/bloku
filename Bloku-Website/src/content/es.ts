@@ -1,9 +1,19 @@
 import type { Copy } from "../types";
 const es: Copy = {
   meta: {
-    homeTitle: "BLOKU — Menos ruido. Más de tu web.",
+    homeTitle: "BLOKU — Bloqueador de anuncios gratis para Chrome y herramientas de enfoque",
     homeDescription:
       "Bloqueador de anuncios gratuito para Chrome con bloqueo de rastreadores, controles de privacidad y herramientas contra las distracciones. Sin cuenta ni plan de pago.",
+  },
+  details: {
+    compatibility: "Para Chrome de escritorio, versión {version} o posterior.",
+    sourceLink: "Código fuente · GPL-3.0",
+    licenseBody: "El software de BLOKU es de código abierto bajo GPL-3.0-only. El repositorio incluye la licencia y los avisos de terceros. El nombre y las imágenes de BLOKU siguen siendo elementos de marca.",
+    fundingTitle: "Apoya a BLOKU",
+    fundingBody: "El apoyo opcional ayuda a mantener BLOKU. Todas las funciones siguen siendo gratuitas y apoyar no da funciones ni ventajas adicionales. Elige un importe único en EUR en PayPal. PayPal procesa el pago según sus políticas; pueden aplicarse comisiones o conversión de divisas.",
+    fundingPrivacyTitle: "Apoyo opcional mediante PayPal",
+    fundingPrivacyBody: "El enlace de apoyo solo te lleva a PayPal si lo eliges. Este sitio no carga scripts ni formularios de pago de PayPal. PayPal procesa el pago según sus políticas y puede compartir datos del pagador y de la transacción con nosotros para gestionar los pagos de apoyo y los registros necesarios. Tú eliges el importe; pueden aplicarse comisiones o conversión de divisas. El apoyo no cambia el acceso a las funciones de BLOKU.",
+    paypalPolicy: "Política de privacidad de PayPal",
   },
   nav: {
     features: "Funciones",
@@ -32,7 +42,7 @@ const es: Copy = {
     demoTitle: "Tu atención te pertenece.",
     demoBody:
       "Prueba este ejemplo interactivo. Activa la protección y oculta las distracciones. El resto de la página sigue siendo tuyo.",
-    featureEyebrow: "Una extensión pequeña. Controles útiles.",
+    featureEyebrow: "Tu navegador. Tus controles.",
     featureTitle: "Quédate con lo bueno.",
     featureIntro:
       "Todas las herramientas están incluidas. Empieza bloqueando anuncios y elige los controles que encajen contigo.",
@@ -193,7 +203,7 @@ const es: Copy = {
     troubleshooting: [
       {
         title: "Un sitio no funciona bien",
-        body: "Pausa BLOKU para ese sitio y recarga. Si se soluciona, permite el sitio o desactiva controles uno a uno para encontrar la causa.",
+        body: "Pausa BLOKU para ese sitio. Guarda el trabajo pendiente y elige «Recargar página» en la ventana emergente de BLOKU. Para aplicar por completo la pausa del bloqueo de anuncios y los cambios en elementos ocultos, puede ser necesario recargar, también tras cambios posteriores de filtrado, especialmente si ya hay páginas incrustadas abiertas. Si se soluciona el problema, permite el sitio o desactiva controles uno a uno para encontrar la causa. Las restricciones de concentración siguen vigentes.",
       },
       {
         title: "Sigo viendo un anuncio",
@@ -212,7 +222,7 @@ const es: Copy = {
     sections: [
       {
         title: "Qué guarda la extensión",
-        body: "BLOKU procesa localmente las direcciones web, el contexto de las solicitudes de red y los marcos, y el contenido de las páginas para filtrar anuncios y rastreadores, ocultar elementos y aplicar tus controles de privacidad y concentración. Su biblioteca de filtrado observa temporalmente las solicitudes y la navegación; el registro persistente de solicitudes y la telemetría están desactivados. El navegador guarda ajustes, estado de filtros, excepciones por sitio, selectores guardados, reglas locales, perfiles y plazos de las sesiones. Los límites diarios usan solo el tiempo activo observado en los sitios que configures; no cuentan la inactividad, las ventanas sin foco ni los intervalos largos sin observación. Por defecto, solo se conservan los contadores de hoy necesarios para los límites. El historial local opcional guarda resúmenes durante un máximo de 90 días; desactivarlo elimina los resúmenes anteriores.",
+        body: "BLOKU procesa localmente las direcciones web, el contexto de las solicitudes de red y los marcos, y el contenido de las páginas para filtrar anuncios y rastreadores, ocultar elementos y aplicar tus controles de privacidad y concentración. Su biblioteca de filtrado observa temporalmente las solicitudes y la navegación; el registro persistente de solicitudes y la telemetría están desactivados. El navegador guarda ajustes, estado de filtros, excepciones por sitio, selectores guardados, reglas locales, perfiles y plazos de las sesiones. Los límites diarios usan solo el tiempo activo observado en los sitios que configures; no cuentan la inactividad, las ventanas sin foco ni los intervalos largos sin observación. Por defecto, solo se conservan los contadores de hoy necesarios para los límites. El historial local opcional guarda resúmenes durante un máximo de 90 días; desactivarlo elimina los resúmenes anteriores. La biblioteca de filtrado también procesa temporalmente cabeceras de solicitudes y respuestas, que pueden incluir valores de Cookie y Set-Cookie con identificadores de sesión. Estos datos se procesan localmente, no se conservan como registros de solicitudes ni los sube BLOKU, y no se usan para modificar cookies.",
       },
       {
         title: "Qué envía la extensión",
@@ -220,7 +230,7 @@ const es: Copy = {
       },
       {
         title: "El sitio web",
-        body: "Este sitio no carga Google Analytics ni otros scripts de análisis. Guarda tu tema en el navegador. El proveedor de alojamiento procesa la información habitual necesaria para servir el sitio. Los servicios externos tienen sus propias políticas.",
+        body: "Este sitio no carga Google Analytics ni otros scripts de análisis. Guarda tu tema en el navegador. El proveedor de alojamiento procesa la información habitual necesaria para servir el sitio. Los servicios externos tienen sus propias políticas. Chrome abre automáticamente la página de bienvenida de este sitio tras una instalación nueva y la página de despedida al desinstalar BLOKU. Estas visitas independientes exponen al alojamiento los metadatos habituales, como tu dirección IP, las cabeceras de solicitud del navegador y la hora de acceso. BLOKU no añade identificadores, direcciones de sitios visitados, ajustes ni actividad local a esas URL. Estas visitas son independientes del historial de navegación procesado localmente; usar BLOKU no requiere cuenta ni licencia.",
       },
       {
         title: "Soporte y pagos anteriores",
@@ -324,7 +334,7 @@ const es: Copy = {
     rights: "Todos los derechos reservados.",
     version: "Versión 2.0",
     allFree: "Todas las funciones gratis.",
-    updated: "Actualizado el 1 de noviembre de 2026",
+    updated: "Actualizado el 2 de noviembre de 2026",
   },
 };
 export default es;

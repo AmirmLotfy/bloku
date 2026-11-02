@@ -1,5 +1,5 @@
 import type {StateV2} from '../model';
-export interface Reply {ok:boolean;recovery?:string;state?:StateV2;engine?:{ok:boolean;errors:{message:string}[];revision:number};error?:string;tab?:chrome.tabs.Tab;matches?:number;lists?:{id:string;name:string;ruleCount:number;updatedAt?:string;version?:string}[];buildInfo?:{sdk:string;converter:string;revision:string};}
+export interface Reply {ok:boolean;recovery?:string;state?:StateV2;engine?:{ok:boolean;errors:{message:string}[];revision:number};error?:string;tab?:chrome.tabs.Tab;pauseReloadRequired?:boolean;matches?:number;lists?:{id:string;name:string;ruleCount:number;updatedAt?:string;version?:string}[];buildInfo?:{sdk:string;converter:string;revision:string};}
 export async function request(action:string,payload?:unknown):Promise<Reply>{
  let timer:ReturnType<typeof setTimeout>|undefined;
  const response=await Promise.race([chrome.runtime.sendMessage({type:'BLOKU_V2',action,payload}),new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(new Error('BLOKU did not respond. Reopen settings to retry.')),15000);})]).finally(()=>clearTimeout(timer)) as Reply;

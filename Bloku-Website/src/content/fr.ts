@@ -1,9 +1,19 @@
 import type { Copy } from "../types";
 const fr: Copy = {
   meta: {
-    homeTitle: "BLOKU — Moins de bruit. Plus de votre web.",
+    homeTitle: "BLOKU — Bloqueur de publicités gratuit pour Chrome et outils de concentration",
     homeDescription:
       "Bloqueur de publicités gratuit pour Chrome avec protection contre les traceurs, réglages de confidentialité et outils contre les distractions. Sans compte ni offre payante.",
+  },
+  details: {
+    compatibility: "Pour Chrome sur ordinateur, version {version} ou ultérieure.",
+    sourceLink: "Code source · GPL-3.0",
+    licenseBody: "Le logiciel BLOKU est open source sous licence GPL-3.0-only. Le dépôt contient la licence et les mentions des tiers. Le nom et les illustrations de BLOKU restent des éléments de marque.",
+    fundingTitle: "Soutenir BLOKU",
+    fundingBody: "Votre soutien facultatif aide à maintenir BLOKU. Toutes les fonctions restent gratuites ; le soutien ne donne ni fonction ni avantage supplémentaire. Choisissez un montant ponctuel en EUR sur PayPal. PayPal traite le paiement selon ses politiques ; des frais ou une conversion de devises peuvent s’appliquer.",
+    fundingPrivacyTitle: "Soutien facultatif via PayPal",
+    fundingPrivacyBody: "Le lien de soutien vous mène à PayPal uniquement si vous le choisissez. Ce site ne charge aucun script ni formulaire de paiement PayPal. PayPal traite le paiement selon ses politiques et peut nous communiquer des informations sur le payeur et la transaction pour gérer le soutien et les documents nécessaires. Vous choisissez le montant ; des frais ou une conversion de devises peuvent s’appliquer. Le soutien ne change pas l’accès aux fonctions de BLOKU.",
+    paypalPolicy: "Politique de confidentialité de PayPal",
   },
   nav: {
     features: "Fonctions",
@@ -32,7 +42,7 @@ const fr: Copy = {
     demoTitle: "Votre attention vous appartient.",
     demoBody:
       "Essayez cet exemple interactif. Activez la protection, puis masquez les distractions. Le reste de la page reste à vous.",
-    featureEyebrow: "Petite extension. Commandes utiles.",
+    featureEyebrow: "Votre navigateur. Vos commandes.",
     featureTitle: "Gardez le meilleur.",
     featureIntro:
       "Tous les outils sont inclus. Commencez par bloquer les publicités, puis choisissez les réglages qui vous conviennent.",
@@ -194,7 +204,7 @@ const fr: Copy = {
     troubleshooting: [
       {
         title: "Un site fonctionne mal",
-        body: "Suspendez BLOKU sur ce site et rechargez. Si cela aide, autorisez le site ou désactivez les commandes une par une pour trouver la cause.",
+        body: "Suspendez BLOKU sur ce site. Enregistrez votre travail, puis choisissez « Recharger la page » dans la fenêtre de BLOKU. Une pause du blocage publicitaire et les changements apportés aux éléments masqués peuvent nécessiter un rechargement pour être entièrement appliqués, y compris après des changements de filtrage ultérieurs, surtout si des pages intégrées sont déjà ouvertes. Si cela résout le problème, autorisez le site ou désactivez les commandes une par une pour trouver la cause. Les restrictions de concentration restent actives.",
       },
       {
         title: "Je vois encore une publicité",
@@ -213,7 +223,7 @@ const fr: Copy = {
     sections: [
       {
         title: "Ce que l'extension conserve",
-        body: "BLOKU traite localement les adresses web, le contexte des requêtes réseau et des cadres, ainsi que le contenu des pages pour filtrer les publicités et les traceurs, masquer des éléments et appliquer vos choix de confidentialité et de concentration. Sa bibliothèque de filtrage observe temporairement les requêtes et la navigation ; la journalisation persistante des requêtes et la télémétrie sont désactivées. Le navigateur conserve les réglages, l’état des filtres, les exceptions par site, les sélecteurs enregistrés, les règles locales, les profils et les échéances des séances. Les quotas quotidiens utilisent uniquement le temps actif observé sur les sites configurés ; l’inactivité, les fenêtres sans focus et les longues périodes sans observation ne sont pas comptées. Par défaut, seuls les compteurs du jour nécessaires aux quotas sont conservés. L’historique local facultatif garde des résumés jusqu’à 90 jours ; le désactiver supprime les résumés plus anciens.",
+        body: "BLOKU traite localement les adresses web, le contexte des requêtes réseau et des cadres, ainsi que le contenu des pages pour filtrer les publicités et les traceurs, masquer des éléments et appliquer vos choix de confidentialité et de concentration. Sa bibliothèque de filtrage observe temporairement les requêtes et la navigation ; la journalisation persistante des requêtes et la télémétrie sont désactivées. Le navigateur conserve les réglages, l’état des filtres, les exceptions par site, les sélecteurs enregistrés, les règles locales, les profils et les échéances des séances. Les quotas quotidiens utilisent uniquement le temps actif observé sur les sites configurés ; l’inactivité, les fenêtres sans focus et les longues périodes sans observation ne sont pas comptées. Par défaut, seuls les compteurs du jour nécessaires aux quotas sont conservés. L’historique local facultatif garde des résumés jusqu’à 90 jours ; le désactiver supprime les résumés plus anciens. La bibliothèque de filtrage traite aussi temporairement les en-têtes des requêtes et réponses, qui peuvent inclure des valeurs Cookie et Set-Cookie contenant des identifiants de session. Ces données sont traitées localement, ne sont ni conservées dans des journaux de requêtes ni envoyées par BLOKU, et ne servent pas à modifier les cookies.",
       },
       {
         title: "Ce que l'extension envoie",
@@ -221,7 +231,7 @@ const fr: Copy = {
       },
       {
         title: "Le site web",
-        body: "Ce site ne charge ni Google Analytics ni autres scripts d'analyse. Il mémorise votre thème dans le navigateur. L'hébergeur traite les informations habituelles nécessaires pour servir le site. Les services externes appliquent leurs propres politiques.",
+        body: "Ce site ne charge ni Google Analytics ni autres scripts d'analyse. Il mémorise votre thème dans le navigateur. L'hébergeur traite les informations habituelles nécessaires pour servir le site. Les services externes appliquent leurs propres politiques. Chrome ouvre automatiquement la page de bienvenue de ce site après une nouvelle installation, et la page de départ lors de la désinstallation de BLOKU. Ces visites distinctes transmettent à l’hébergeur les métadonnées habituelles, comme votre adresse IP, les en-têtes de requête du navigateur et l’heure d’accès. BLOKU n’ajoute ni identifiants, ni adresses de sites visités, ni réglages, ni activité locale à ces URL. Ces visites sont distinctes de l’historique de navigation traité localement ; BLOKU ne nécessite ni compte ni licence.",
       },
       {
         title: "Assistance et anciens paiements",
@@ -324,7 +334,7 @@ const fr: Copy = {
     rights: "Tous droits réservés.",
     version: "Version 2.0",
     allFree: "Toutes les fonctions sont gratuites.",
-    updated: "Mis à jour le 1er novembre 2026",
+    updated: "Mis à jour le 2 novembre 2026",
   },
 };
 export default fr;

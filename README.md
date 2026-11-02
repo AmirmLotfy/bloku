@@ -36,3 +36,5 @@ The React/Vite marketing source is in `Bloku-Website`, distributed separately fr
 [Release notes](docs/RELEASE_NOTES.md), [migration/backup behavior](docs/MIGRATION_REPORT.md), [artifact checks](docs/RELEASE_ARTIFACTS.md), [Store reviewer material](docs/STORE_RELEASE.md), and [maintenance](docs/MAINTENANCE.md) document the candidate and remaining limits. The prepared CI performs checks only; it never deploys or submits a release.
 
 Website: https://bloku.app · Support: support@bloku.app
+
+Historical1.1.3 runtime, policies and scripts are isolated under `legacy/v1.1.3` in the private development checkout; the extension source directory intentionally has no legacy root manifest. Build and load `B2/dist` only. Public corresponding source excludes historical material.

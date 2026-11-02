@@ -84,6 +84,15 @@ export function validateState(value: unknown): asserts value is StateV2 {
     for (const [domain, items] of Object.entries(state[key] as object)) if (normalizeDomain(domain)!==domain || !Array.isArray(items) || items.some(s => typeof s !== 'string' || s.length > 4096)) throw new Error('Invalid distraction rule');
     if(key==='distractionRules')for(const items of Object.values(state[key] as Record<string,string[]>))if(items.some(s=>!s.trim()||/[{}\x00-\x1f]|\/\*|url\s*\(/i.test(s)))throw new Error('Element hides must be CSS selectors, without style declarations or URLs');
   }
+  if (state.embeddedHides !== undefined) {
+    if (!Array.isArray(state.embeddedHides) || state.embeddedHides.length > 1000) throw new Error('Invalid embedded element hides');
+    const scopes = new Set<string>();
+    for (const item of state.embeddedHides) {
+      const rule = record(item), key = `${rule.site}\n${rule.frame}`;
+      if (typeof rule.site !== 'string' || normalizeDomain(rule.site) !== rule.site || typeof rule.frame !== 'string' || normalizeDomain(rule.frame) !== rule.frame || scopes.has(key) || !Array.isArray(rule.selectors) || rule.selectors.length > 1000 || rule.selectors.some(selector => typeof selector !== 'string' || !selector.trim() || selector.length > 4096 || /[{}\x00-\x1f]|\/\*|url\s*\(/i.test(selector))) throw new Error('Invalid embedded element hides');
+      scopes.add(key);
+    }
+  }
 }
 function canonicalJson(value: unknown): string {
   return JSON.stringify(value, (_key, item) => item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.keys(item).sort().map(key => [key,item[key]])) : item);

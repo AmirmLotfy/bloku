@@ -2,36 +2,36 @@
 
 The bounded runner is `B2/scripts/v2-accessibility-check.mjs`. It reads the existing qualified-input package, opens an owned Chrome for Testing 156 profile, and inspects the actual options and popup UI. It never builds or modifies `B2/dist`, injects replacement UI/CSS, uses the user's browser profile, browses public websites, or publishes anything.
 
-**Current status: the corrected full eight-locale run passed 289 checks, with 0 failures and 0 skips.** Results below identify the package actually tested. Future runs still require the shared browser-lane grant. This remains bounded automated evidence, not a WCAG conformance claim.
+**Current status: the runner source now audits the compact popup’s collapsed and expanded native disclosures at its intrinsic 380px width. This revision has not been executed.** The earlier 289-check run below belongs to its historical package and popup design. Native toolbar-popup 200% enlargement is explicitly SKIP; extension-tab zoom is not native popover zoom. Future runs require the shared browser-lane grant. This remains bounded evidence, not a WCAG conformance claim.
 
-Authoring checks passed: Node syntax validation and the read-only preflight for all eight locales and 113 package files, initially against checksums-manifest SHA-256 `efe04b515af36607c1485ba0cfaf223c39d85c7fe34f15067a2e866444070c67`. Those authoring checks did not launch a browser; subsequent executions are recorded below.
+Historical authoring checks passed: Node syntax validation and the read-only preflight for all eight locales and 113 package files, initially against checksums-manifest SHA-256 `efe04b515af36607c1485ba0cfaf223c39d85c7fe34f15067a2e866444070c67`. Those authoring checks did not launch a browser; subsequent executions are recorded below.
 
 ```sh
 node --check B2/scripts/v2-accessibility-check.mjs
 node B2/scripts/v2-accessibility-check.mjs --check-only
 node B2/scripts/v2-accessibility-check.mjs --run --locales en,ar --screenshots
-node B2/scripts/v2-accessibility-check.mjs --run --screenshots --expected-checksums 41049e2448c58ef339a8f2912c50041423cf7bfcefa36c0cfa99e1c34783f4c2
+node B2/scripts/v2-accessibility-check.mjs --run --expected-checksums 7b0424948d80021bc3564b551d6710d6a3f32a60ff99d6d86f71f90665ec34c5
 ```
 
 `--check-only` validates inputs without launching Chrome. Omit `--locales` to test `en`, `ar`, `es`, `pt_BR`, `fr`, `de`, `ja`, and `hi`. The optional fingerprint argument refuses a different built package. `--screenshots` captures evidence only for English and Arabic; it never adds screenshots for the other six locales.
 
 ## Intended checks
 
-For every locale, the runner inspects all six options sections and a real popup view associated with an owned `http://a11y.bloku.test` fixture. It seeds only ordinary user preferences through the trusted `BLOKU_V2` API: locale, light theme, a disabled focus profile with weekday/daily-allowance fields, selected YouTube presets, a saved element hide, and a local rule. Activity storage remains disabled, and no fabricated counters or historical records are added.
+For every locale, the runner inspects all six options sections and the actual popup document in an extension tab associated with an owned `http://a11y.bloku.test` fixture. This does not create a toolbar popover. It seeds ordinary preferences through the trusted API: locale, light theme, a disabled focus profile with weekday/daily-allowance fields, selected YouTube presets, a saved element hide, and a local rule. The owned active hostname uses the distraction disclosure’s fallback/settings controls rather than qualifying live supported-site preset checkboxes. Activity storage remains disabled, and no fabricated counters or historical records are added.
 
 | Area | Actual observation |
 | --- | --- |
-| Language and direction | Exact document language, explicit direction, computed body direction, translated primary headings, Arabic RTL, and a status region. |
-| Accessible controls | Chromium's native accessibility tree exposes nonempty names for interactive button, checkbox, textbox, combobox, link, and related roles. Positive tabindex is rejected. |
-| Keyboard focus | At the normal viewport, real Tab presses traverse visible enabled controls in protection, focus, local-rules, and popup views. Each visited element must expose focus through `:focus-visible` or native descendant `:focus-within`, show a nontransparent outline at least 2px wide, and intersect the viewport. Native time fields can contain several Tab stops within one host input; those stops are recorded without assuming a keyboard trap. The report records traversal and any 40-control limit. |
-| Normal layout | Options at 1280px and popup content at 380px have no document-level horizontal overflow. |
-| Small viewport | Every options section and popup content are checked at a real Chromium-emulated 320px viewport. Contained horizontal navigation scrolling is permitted; document overflow is not. |
-| Reduced motion | The browser's `prefers-reduced-motion: reduce` setting is applied. The media query must match and computed CSS animations/transitions must be inactive. |
-| Native 200% zoom | Device-metric overrides are cleared, the owned native window is resized, and `chrome.tabs.setZoom(..., 2)` is used. `getZoom` and actual layout/device-pixel changes must confirm native zoom before overflow results are labeled 200%. |
+| Language and direction | Exact document language, explicit direction, computed body direction, translated headings, Arabic RTL, and a status region. |
+| Accessible controls | Chromium’s accessibility tree exposes nonempty names for buttons, checkboxes, textboxes, comboboxes, links and native disclosure triangles. Icon-only buttons require explicit aria-labels. Positive tabindex is rejected. |
+| Keyboard focus | Real Tab traverses visible controls and summaries in protection, focus, local-rules and both popup states. Each visited element must expose native focus, a nontransparent outline at least 2px wide, and viewport intersection. Hidden disclosure descendants are excluded. Native time segments are recorded without assuming a trap; any 40-control cap is reported. |
+| Disclosure behavior | All three native details/summary pairs must have localized names. Descendants must be hidden while collapsed and visible while expanded. Real Tab plus Enter/Space expands and re-collapses them. All summaries must be reached in both keyboard traversals. |
+| Normal layout | Options at 1280px and collapsed/expanded popup content at intrinsic 380px have no horizontal document overflow. Popup content uses a 380×600 tab so longer expanded content must remain reachable through native vertical scrolling/Tab. |
+| Small viewport | Every options section retains its 320px test. Popup width is intrinsically 380px; forcing it into a 320px/250px tab is not a native popup-sizing check and is omitted. |
+| Reduced motion | Browser reduced-motion preference must match; computed animations and transitions must be inactive, including expanded popup contents. |
+| Options native 200% zoom | Device overrides are cleared, the native options window is resized, and chrome.tabs.setZoom(2), getZoom and renderer changes confirm real options zoom before overflow is labeled 200%. |
+| Toolbar popup 200% enlargement | Explicit SKIP per locale. The runner does not exercise a native toolbar popup; zooming popup.html in a tab cannot qualify popover text enlargement. No CSS zoom or density simulation is substituted. |
 
-Options navigation uses direct element-rectangle mouse clicks and bounded 100ms polling. It does not depend on Puppeteer's intersection/animation-frame click waits, which were unreliable while the host was idle in earlier qualification work.
-
-Native zoom is deliberately distinct from responsive viewport emulation. A rejected native tab/window API, or accepted zoom with no observed renderer change, is recorded as `SKIP` with the exact reason and metrics. The runner never substitutes CSS `zoom`, transforms, larger font CSS, or device-scale-factor changes for browser zoom. It resets native zoom before moving on. A zoom-supported surface is checked for document overflow at its **observed** CSS viewport width; Chrome may clamp a native popup-sized window differently from a toolbar popover.
+Options navigation uses direct element-rectangle mouse clicks and bounded polling. Native summary activation uses real Tab and Enter/Space rather than assigning `details.open` or injecting CSS. Options zoom resets afterward. A meaningful toolbar-popup text-enlargement acceptance method remains unresolved; changing CSS, default-font preferences or device scale is not reported as native 200% popover zoom.
 
 ## Output and cleanup
 
@@ -53,11 +53,11 @@ Screenshots and computed focus styles support review but do not establish that e
 
 All named-control, locale/RTL, normal and 320px overflow, reduced-motion, and native-zoom checks in that initial run passed. Native 200% zoom was observed directly: options changed from 1280 to 640 CSS pixels; Chrome clamped the popup-sized native window to 500 pixels, which became 250 CSS pixels at 200%. Device pixel ratio changed from 1 to 2. There were no external requests or application-phase runtime errors. Four “browser is shutting down” events arrived during cleanup in that first report; subsequent runner output separates cleanup events explicitly. The owned browser, server, and profile were cleaned up.
 
-## Current full execution
+## Historical full execution — package 41049e2448c5
 
-The current result is `artifacts/accessibility/bloku-2.0.0-41049e2448c5-fa9vae/report.json`: **289 PASS, 0 FAIL, 0 SKIP**, status `PASS_BOUNDED_AUTOMATED_CHECKS`. It ran from `2026-11-01T22:13:49Z` to `2026-11-01T22:15:09Z` in the owned Chrome for Testing `156.0.8078.80` browser against package `41049e2448c58ef339a8f2912c50041423cf7bfcefa36c0cfa99e1c34783f4c2`. Those UTC timestamps fall on 2 November in the workspace's Africa/Cairo timezone.
+The historical result is `artifacts/accessibility/bloku-2.0.0-41049e2448c5-fa9vae/report.json`: **289 PASS, 0 FAIL, 0 SKIP**, status `PASS_BOUNDED_AUTOMATED_CHECKS`. It ran from `2026-11-01T22:13:49Z` to `2026-11-01T22:15:09Z` in the owned Chrome for Testing `156.0.8078.80` browser against package `41049e2448c58ef339a8f2912c50041423cf7bfcefa36c0cfa99e1c34783f4c2`. Those UTC timestamps fall on 2 November in the workspace's Africa/Cairo timezone.
 
-All eight locales passed accessible-name, language/direction, normal/320px overflow, reduced-motion, and actual keyboard-outline checks. All **16 native 200% zoom observations** passed, covering options and popup content in every locale, with corresponding overflow checks. No zoom cases were simulated or skipped. The native popup-sized window remained clamped by Chrome to 500 physical viewport pixels before zoom and 250 CSS pixels afterward; the toolbar popover itself remains outside this evidence.
+All eight locales passed accessible-name, language/direction, normal/320px overflow, reduced-motion, and actual keyboard-outline checks. All **16 extension-tab 200% zoom observations** passed, covering options and the old popup document in tabs, with corresponding overflow checks. No tab zoom cases were simulated or skipped. These do not establish toolbar popover enlargement. The native popup-sized window remained clamped by Chrome to 500 physical viewport pixels before zoom and 250 CSS pixels afterward; the toolbar popover itself remains outside this evidence.
 
 The visible time-input fix was confirmed both in computed state and the English/Arabic screenshots `en-options-focus-time-input-focus.png` and `ar-options-focus-time-input-focus.png`. The report contains ten English/Arabic screenshots in total. The previous outer-outline failures remain in their original evidence directory.
 
@@ -68,4 +68,16 @@ There were zero application-phase runtime errors and zero external network attem
 
 These results qualify the listed automated observations for the exact package only. The manual and browser-surface limits above remain unchanged.
 
-The preceding corrected run, `artifacts/accessibility/bloku-2.0.0-bf82b25f1d2b-FYtMEw/`, also passed 289 checks with no failures or skips. It is preserved as evidence for its own package. The current run repeats the full matrix after the canonical-import validation guard changed the package fingerprint; the product UI/CSS and qualification runner were unchanged. Use the `41049e2448c5-fa9vae` report for the current package.
+The preceding corrected run, `artifacts/accessibility/bloku-2.0.0-bf82b25f1d2b-FYtMEw/`, also passed 289 checks with no failures or skips. It is preserved as evidence for its own package. The current run repeats the full matrix after the canonical-import validation guard changed the package fingerprint; the product UI/CSS and qualification runner were unchanged. Use the `41049e2448c5-fa9vae` report only for that historical package; it does not qualify the current compact popup.
+
+## Current native toolbar observation — 2 November 2026
+
+The coordinator opened the actual Chrome for Testing 156 toolbar action through the native UI against package checksums-manifest `7b0424948d80021bc3564b551d6710d6a3f32a60ff99d6d86f71f90665ec34c5`. The English dark/system popup rendered at innerWidth/root clientWidth/root scrollWidth **380px**, innerHeight **577px**, and DPR **2**. This is normal density on this display, not proof of 200% zoom. Three read-only target captures preserve the metrics:
+
+- `B2/artifacts/native-audit/2026-11-02T07-20-21-343Z/popup-1793604093579.json`
+- `B2/artifacts/native-audit/2026-11-02T07-20-21-343Z/popup-1793604112798.json`
+- `B2/artifacts/native-audit/2026-11-02T07-20-21-343Z/popup-1793604155061.json`
+
+The coordinator reports that Cmd-plus five times while the popup was open changed the underlying website’s zoom; the actual popup remained at 380px/DPR2. Options 200% zoom was separately confirmed in native Chrome UI. Therefore native toolbar-popup 200% enlargement remains **SKIP / not established**, while genuine options zoom remains a separate supported check. No simulated popup zoom or popup-sized-window result is promoted into native popover acceptance.
+
+The new all-locale collapsed/expanded/keyboard harness revision is source-only and has not been run. No screenshots were regenerated. It should produce documented popup zoom skips if all other checks pass, rather than a false zero-skip conformance claim. Source changes are confined to this document and the accessibility runner; product source, existing dist, backend and active root runtime were not changed.

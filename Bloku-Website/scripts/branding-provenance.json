@@ -1,0 +1,46 @@
+{
+  "method": "Native macOS sips resampling of the original unchanged BLOKU artwork; no generative editing.",
+  "source": {
+    "path": "scripts/branding-original.png",
+    "width": 1000,
+    "height": 1000,
+    "bytes": 52850,
+    "sha256": "f191e688ae0f8bbbff20bd9796ae68c60b73adb8030a34110d00b9d4b5768331"
+  },
+  "previous": {
+    "logoLightBytes": 52850,
+    "logoDarkBytes": 52850,
+    "faviconPngBytes": 52850,
+    "faviconIcoBytes": 32038
+  },
+  "files": [
+    {
+      "path": "public/bloku-logo.png",
+      "width": 204,
+      "height": 204,
+      "bytes": 19827,
+      "sha256": "e297576433cedb49d6de8f5f0a4ffb0d562b474f4edd0b7c0b0fb4f9267a2171"
+    },
+    {
+      "path": "public/favicon.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 3765,
+      "sha256": "4c8a757ac0d3721a91b54f167e7e57c046a5a50c9b4eaa1452c40ac0a1c7ef89"
+    },
+    {
+      "path": "public/apple-touch-icon.png",
+      "width": 180,
+      "height": 180,
+      "bytes": 17591,
+      "sha256": "915da7b781a91b380b33b1ce1dd88413ffe533a10584f27f93c40c44ee18daf4"
+    },
+    {
+      "path": "public/favicon.ico",
+      "width": 32,
+      "height": 32,
+      "bytes": 4414,
+      "sha256": "280678f18186ec8744b8d47be4312cf044e2e488f87fdedfab50a5c6b7cbae0a"
+    }
+  ]
+}

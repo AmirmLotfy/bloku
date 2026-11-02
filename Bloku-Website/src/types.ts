@@ -39,6 +39,16 @@ export interface DocumentCopy {
 }
 export interface Copy {
   meta: { homeTitle: string; homeDescription: string };
+  details: {
+    compatibility: string;
+    sourceLink: string;
+    licenseBody: string;
+    fundingTitle: string;
+    fundingBody: string;
+    fundingPrivacyTitle: string;
+    fundingPrivacyBody: string;
+    paypalPolicy: string;
+  };
   nav: {
     features: string;
     support: string;

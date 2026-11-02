@@ -64,3 +64,5 @@ A candidate archive is not a claim of completed compatibility, performance or st
 Settings exports omit timed sessions. Import previews editable settings and applies through explicit validation on Save; current usage and matching active sessions are preserved. Saved element selectors can be edited or restored in Distractions. Weekday checkboxes use localized day names. Popup status distinguishes global off, exact/inherited pauses, recurring focus and breaks.
 
 The limited privacy-preference option exposes `navigator.globalPrivacyControl` to page scripts only. It does not send the `Sec-GPC` HTTP header and must not be advertised as complete GPC. The stock SDK's coupled DNT/GPC header behavior and exception priority do not satisfy this release's independence requirements; no second DNR writer is introduced to conceal that limitation.
+
+Historical1.1.3 runtime, policies and scripts are isolated under `legacy/v1.1.3` in the private development checkout; the extension source directory intentionally has no legacy root manifest. Build and load `B2/dist` only. Public corresponding source excludes historical material.

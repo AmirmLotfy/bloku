@@ -1,11 +1,12 @@
 import {loadMessages,type Messages} from './ui/i18n';
 import presets from '../data/presets.json';
+import {presetSiteForUrl} from './distraction-scopes';
 type PageConfig={ok:boolean;host:string;preferences:{rejectConsent:boolean;cleanUrls:boolean;gpc:boolean;disableAutoplay:boolean};presets:string[];selectors:string[];locale:string;adsEnabled:boolean};
 let config:PageConfig|null=null;let messages:Messages;let style:HTMLStyleElement|null=null;let stopPicker:(()=>void)|null=null;let currentCss='';
 const STYLE='bloku-v2-distractions';
 function validSelector(value:string){if(value.length>4096||/[{}\x00]/.test(value))return false;try{document.querySelector(value);return true;}catch{return false;}}
 function prepareStyle(){
- if(!config)return;const groups=Object.entries(presets).filter(([domain])=>config!.host===domain||config!.host.endsWith(`.${domain}`)).flatMap(([,entry])=>entry.groups.filter(g=>config!.presets.includes(g.id)).flatMap(g=>g.selectors));
+ if(!config)return;const site=presetSiteForUrl(location.href),groups=site?presets[site as keyof typeof presets].groups.filter(group=>config!.presets.includes(group.id)).flatMap(group=>group.selectors):[];
  const selectors=[...new Set([...groups,...config.selectors])].filter(validSelector);
  if(!selectors.length){style?.remove();style=null;return;}
  if(!document.documentElement)return;
@@ -13,8 +14,10 @@ function prepareStyle(){
  currentCss=`${selectors.join(',\n')} {display:none!important}`;if(style.textContent!==currentCss)style.textContent=currentCss;
  if(!style.isConnected)(document.head||document.documentElement).append(style);
 }
+let refreshVersion=0;
 async function refresh(){
- try{const next=await chrome.runtime.sendMessage({type:'BLOKU_V2',action:'GET_PAGE_CONFIG'}) as PageConfig;if(!next?.ok)return;config=next;messages=await loadMessages(next.locale);prepareStyle();if(next.preferences.rejectConsent)await enableConsent();else stopConsent();}catch{/* Extension updates invalidate old content contexts. */}
+ const version=++refreshVersion;
+ try{const next=await chrome.runtime.sendMessage({type:'BLOKU_V2',action:'GET_PAGE_CONFIG'}) as PageConfig;if(!next?.ok||version!==refreshVersion)return;const localized=await loadMessages(next.locale);if(version!==refreshVersion)return;config=next;messages=localized;prepareStyle();if(next.preferences.rejectConsent)await enableConsent();else stopConsent();}catch{/* Extension updates invalidate old content contexts. */}
 }
 let consentStarted=false;let consentCleanup:(()=>void)|undefined;
 async function enableConsent(){
@@ -32,21 +35,26 @@ function selectorFor(node:Element):string|null{
  }
  return null;
 }
-async function startPicker(){
- if(window!==window.top||!config)return;if(!messages)await refresh();stopPicker?.();
+let contextTarget:HTMLElement|null=null;let contextAt=0;
+document.addEventListener('contextmenu',event=>{if(event.isTrusted){contextTarget=event.target instanceof HTMLElement?event.target:null;contextAt=Date.now();}},true);
+async function startPicker(fromContextMenu=false){
+ if(!config||!messages)await refresh();if(!config)return;stopPicker?.();
  const host=document.createElement('div');host.style.cssText='position:fixed;inset:auto 16px 16px 16px;z-index:2147483647;pointer-events:auto';const shadow=host.attachShadow({mode:'closed'});
  const panel=document.createElement('div');panel.style.cssText='font:14px/1.5 system-ui;background:#fff;color:#171318;border:2px solid #8b1230;border-radius:12px;padding:16px;box-shadow:0 8px 36px #0004;max-width:600px;margin:auto';
  const instruction=document.createElement('p');instruction.textContent=messages.hidePreview;const selectedText=document.createElement('code');selectedText.style.cssText='display:block;overflow-wrap:anywhere;margin-block:8px';const save=document.createElement('button');save.textContent=messages.confirmHide;save.disabled=true;const cancel=document.createElement('button');cancel.textContent=messages.cancel;for(const b of [save,cancel])b.style.cssText='font:inherit;padding:10px 16px;margin-inline-end:8px;cursor:pointer';panel.append(instruction,selectedText,save,cancel);shadow.append(panel);document.documentElement.append(host);
- let hovered:HTMLElement|null=null;let oldOutline='';let selected:Element|null=null;let selector:string|null=null;let previousDisplay='';let previousPriority='';
- function resetOutline(){if(hovered)hovered.style.outline=oldOutline;hovered=null;}
+ host.dir=config.locale==='ar'?'rtl':'ltr';
+ let hovered:HTMLElement|null=null;let oldOutline='';let oldOutlinePriority='';let selected:Element|null=null;let selector:string|null=null;let previousDisplay='';let previousPriority='';
+ function resetOutline(){if(hovered)hovered.style.setProperty('outline',oldOutline,oldOutlinePriority);hovered=null;}
  function cleanup(){resetOutline();if(selected instanceof HTMLElement)selected.style.setProperty('display',previousDisplay,previousPriority);host.remove();document.removeEventListener('pointerover',over,true);document.removeEventListener('click',choose,true);document.removeEventListener('keydown',key,true);stopPicker=null;}
- function over(event:PointerEvent){if(event.composedPath().includes(host)||selected)return;const node=event.target;if(!(node instanceof HTMLElement)||[document.body,document.documentElement].includes(node))return;resetOutline();hovered=node;oldOutline=node.style.outline;node.style.outline='2px solid #8b1230';}
- function choose(event:MouseEvent){if(event.composedPath().includes(host))return;event.preventDefault();event.stopImmediatePropagation();const node=event.target;if(!(node instanceof HTMLElement)||[document.body,document.documentElement].includes(node))return;if(selected instanceof HTMLElement)selected.style.setProperty('display',previousDisplay,previousPriority);resetOutline();selector=selectorFor(node);if(!selector)return;selected=node;previousDisplay=node.style.display;previousPriority=node.style.getPropertyPriority('display');node.style.setProperty('display','none','important');selectedText.textContent=selector;save.disabled=false;save.focus();}
+ function over(event:PointerEvent){if(event.composedPath().includes(host)||selected)return;const node=event.target;if(!(node instanceof HTMLElement)||[document.body,document.documentElement].includes(node))return;resetOutline();hovered=node;oldOutline=node.style.outline;oldOutlinePriority=node.style.getPropertyPriority('outline');node.style.outline='2px solid #8b1230';}
+ function selectNode(node:HTMLElement){if([document.body,document.documentElement].includes(node)||!node.isConnected)return;if(selected instanceof HTMLElement)selected.style.setProperty('display',previousDisplay,previousPriority);resetOutline();selector=selectorFor(node);if(!selector)return;selected=node;previousDisplay=node.style.display;previousPriority=node.style.getPropertyPriority('display');node.style.setProperty('display','none','important');selectedText.textContent=selector;save.disabled=false;save.focus();}
+ function choose(event:MouseEvent){if(event.composedPath().includes(host))return;event.preventDefault();event.stopImmediatePropagation();if(event.target instanceof HTMLElement)selectNode(event.target);}
  function key(event:KeyboardEvent){if(event.key==='Escape'){event.preventDefault();cleanup();}}
  cancel.addEventListener('click',cleanup);save.addEventListener('click',async()=>{if(!selector)return;save.disabled=true;try{const reply=await chrome.runtime.sendMessage({type:'BLOKU_V2',action:'SAVE_PICKER_RULE',payload:{domain:config!.host,selector}});if(!reply?.ok)throw new Error(reply?.error||messages.error);const savedSelector=selector;cleanup();await refresh();showUndo(savedSelector);}catch(e){instruction.textContent=e instanceof Error?e.message:messages.error;save.disabled=false;}});
  stopPicker=cleanup;document.addEventListener('pointerover',over,true);document.addEventListener('click',choose,true);document.addEventListener('keydown',key,true);
+ if(fromContextMenu&&contextTarget&&Date.now()-contextAt<30000)selectNode(contextTarget);
 }
-chrome.runtime.onMessage.addListener((message,sender)=>{if(sender.id!==chrome.runtime.id)return false;if(message?.action==='BLOKU_PICKER_START'){void startPicker();}if(message?.action==='BLOKU_REFRESH_CONFIG'){void refresh();}return false;});
+chrome.runtime.onMessage.addListener((message,sender)=>{if(sender.id!==chrome.runtime.id)return false;if(message?.action==='BLOKU_PICKER_START'){void startPicker(message.fromContextMenu===true);}if(message?.action==='BLOKU_REFRESH_CONFIG'){void refresh();}return false;});
 chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&changes.blokuV2)void refresh();});
 // Link cleanup is limited to deliberate clicks, known tracking parameters, and unsigned HTTP(S) links.
 document.addEventListener('click',event=>{

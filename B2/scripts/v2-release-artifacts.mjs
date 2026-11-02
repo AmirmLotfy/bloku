@@ -28,6 +28,9 @@ const SOURCE_FILES = [
   'B2/engine/package.json', 'B2/engine/INTEGRATION.md', 'B2/engine/gate-fixture.txt', 'docs/RELEASE_ARTIFACTS.md', 'docs/STORE_ASSETS.md', 'docs/STORE_RELEASE.md', 'docs/PUBLIC_QUALIFICATION.md', 'docs/PERFORMANCE_REVIEW.md', 'docs/RUNTIME_QUALIFICATION.md', 'docs/VIDEO_QUALIFICATION.md', 'docs/RELEASE_NOTES.md', 'docs/ACCESSIBILITY.md', 'docs/MIGRATION_REPORT.md', 'docs/MAINTENANCE.md', '.github/workflows/bloku-qualification.yml',
 ];
 SOURCE_FILES.push('docs/SUBMISSION_HANDOFF.md');
+SOURCE_FILES.push('docs/AUDIT_SUMMARY_20261102.md');
+SOURCE_FILES.push('docs/STORE_DISCLOSURE_REVIEW_20261102.md');
+SOURCE_FILES.push('B2/scripts/v2-behavior-audit.mjs', 'B2/scripts/v2-ui-audit-setup.mjs', 'docs/AUDIT_ENGINE_POPUP_20261102.md', 'docs/AUDIT_EXTENSION_BEHAVIOR_20261102.md', 'docs/AUDIT_POPUP_LAYOUT_20261102.md', 'docs/AUDIT_WEBSITE_STORE_20261102.md');
 const SOURCE_TREES = ['B2/src', 'B2/engine/vendor', 'B2/icons', 'B2/store', 'shared'];
 const WEBSITE_FILES = [
   'LICENSE', 'Bloku-Website/README.md', 'Bloku-Website/package.json',
@@ -87,7 +90,7 @@ function assertNoHostPaths(bytes, relative) {
   // Pinned upstream filters contain URL patterns such as /home/new/v*/api/.
   // Check actual workstation paths there without treating those URL filters as home directories.
   if(relative.startsWith('B2/engine/vendor/')||relative==='B2/scripts/v2-release-artifacts.mjs'){requireCondition(!text.includes(os.homedir()+path.sep), `Workstation path found in upstream input: ${relative}`);return;}
-  requireCondition(!/(?:^|[\s(="'])(?:\/Users\/[^/\s"']+\/|\/home\/[^/\s"']+\/|[A-Z]:\\Users\\)/m.test(text), `Host-specific path found in public text input: ${relative}`);
+  requireCondition(!/(?:^|[\s(="'\x60])(?:\/Users\/[^/\s"']+\/|\/home\/[^/\s"']+\/|[A-Z]:\\Users\\)/m.test(text), `Host-specific path found in public text input: ${relative}`);
 }
 
 function glob(pattern, paths) {
@@ -275,6 +278,8 @@ async function selfTest() {
     check(() => assert.ok(forbiddenPath('engine/rulesets/ruleset_9000/ruleset_9000.json', { submission: true })));
     check(() => assert.ok(forbiddenPath('runtime-probe.js', { submission: true })));
     check(() => assert.ok(forbiddenPath('.env.production')));
+    check(() => assert.throws(() => assertNoHostPaths(Buffer.from('Package: `/Users/example/project/dist`'), 'docs/report.md'), /Host-specific path/));
+    check(() => assert.throws(() => assertNoHostPaths(Buffer.from('Package: `/home/example/project/dist`'), 'docs/report.md'), /Host-specific path/));
     check(() => assert.ok(!forbiddenPath('B2/engine/gate-fixture.txt')));
     check(() => assert.deepEqual(glob('locales/*.json', ['locales/en.json', 'background.js']), ['locales/en.json']));
     check(() => assert.throws(() => manifestAssets({ icons: { 16: 'missing.png' } }, ['manifest.json'])));
@@ -341,10 +346,19 @@ async function selfTest() {
 }
 
 async function main(args) {
+  let output = path.join(ROOT, 'artifacts/release');
+  const outputIndex = args.indexOf('--output-dir');
+  if (outputIndex >= 0) {
+    requireCondition(!args.includes('--self-test') && args.lastIndexOf('--output-dir') === outputIndex && typeof args[outputIndex + 1] === 'string' && !args[outputIndex + 1].startsWith('--'), 'Provide one output directory with release options.');
+    output = path.resolve(ROOT, args[outputIndex + 1]);
+    const relativeOutput = path.relative(path.join(ROOT, 'artifacts'), output);
+    requireCondition(relativeOutput && relativeOutput !== '..' && !relativeOutput.startsWith(`..${path.sep}`) && !path.isAbsolute(relativeOutput), 'Output must be a directory beneath this workspace artifacts folder.');
+    args = args.filter((_, index) => index !== outputIndex && index !== outputIndex + 1);
+  }
   const known = new Set(['--help', '--self-test', '--check-only', '--extension-only', '--include-website-source']);
   for (const flag of args) requireCondition(known.has(flag), `Unknown option: ${flag}`);
   if (args.includes('--help')) {
-    console.log('Usage: node B2/scripts/v2-release-artifacts.mjs [--check-only] [--extension-only] [--include-website-source]\n       node B2/scripts/v2-release-artifacts.mjs --self-test\nReads the existing B2/dist without building or repairing it. Outputs candidate ZIPs and SHA256SUMS under artifacts/release. Packaging is not release qualification.'); return;
+    console.log('Usage: node B2/scripts/v2-release-artifacts.mjs [--check-only] [--extension-only] [--include-website-source] [--output-dir artifacts/release-rc2]\n       node B2/scripts/v2-release-artifacts.mjs --self-test\nReads the existing B2/dist without building or repairing it. Defaults to artifacts/release. Packaging is not release qualification.'); return;
   }
   if (args.includes('--self-test')) { requireCondition(args.length === 1, '--self-test cannot be combined with release options.'); await selfTest(); return; }
   requireCondition(!(args.includes('--extension-only') && args.includes('--include-website-source')), 'Website source requires the normal source-archive mode.');
@@ -361,7 +375,6 @@ async function main(args) {
   if (args.includes('--check-only')) {
     console.log(JSON.stringify({ status: 'INPUTS_VALID_NOT_RELEASE_QUALIFIED', version: VERSION, archives: jobs.map(job => ({ file: job.name, entries: job.entries.length })), excludedRuntimeFiles: extension.excludedRuntimeFiles, manifestSha256: extension.manifestSha256, checksumsManifestSha256: extension.checksumsManifestSha256 }, null, 2)); return;
   }
-  const output = path.join(ROOT, 'artifacts/release');
   await mkdir(output, { recursive: true });
   const temporary = await mkdtemp(path.join(output, '.v2-release-'));
   try {
@@ -377,7 +390,7 @@ async function main(args) {
     const sums = [...archives.map(archive => `${archive.sha256}  ${archive.file}`), `${sha256(manifestBytes)}  release-manifest.json`].sort(compare).join('\n') + '\n';
     await writeFile(path.join(temporary, 'SHA256SUMS'), sums);
     for (const file of [...jobs.map(job => job.name), 'release-manifest.json', 'SHA256SUMS']) await rename(path.join(temporary, file), path.join(output, file));
-    console.log(JSON.stringify({ status: release.status, output: 'artifacts/release', archives, excludedRuntimeFiles: extension.excludedRuntimeFiles, qualification: 'Run the coordinator-approved exact-package gates before publication.' }, null, 2));
+    console.log(JSON.stringify({ status: release.status, output: path.relative(ROOT, output), archives, excludedRuntimeFiles: extension.excludedRuntimeFiles, qualification: 'Run the coordinator-approved exact-package gates before publication.' }, null, 2));
   } finally { await rm(temporary, { recursive: true, force: true }); }
 }
 

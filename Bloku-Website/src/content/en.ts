@@ -1,9 +1,19 @@
 import type { Copy } from "../types";
 const en: Copy = {
   meta: {
-    homeTitle: "BLOKU — A little less internet. A lot more focus.",
+    homeTitle: "BLOKU — Free Chrome ad blocker and focus tools",
     homeDescription:
       "A free Chrome ad blocker with tracker blocking, privacy controls, and tools to hide distractions. No account. No paid tier. Your settings stay in your browser.",
+  },
+  details: {
+    compatibility: "For desktop Chrome {version} or later.",
+    sourceLink: "Source code · GPL-3.0",
+    licenseBody: "BLOKU software is open source under GPL-3.0-only. The source repository includes the license and third-party notices. The BLOKU name and artwork remain brand assets.",
+    fundingTitle: "Support BLOKU",
+    fundingBody: "Optional support helps maintain BLOKU. Every feature stays free, and supporting gives no extra features or benefits. Choose your own one-time amount in EUR on PayPal. PayPal handles the payment under its policies; fees or currency conversion may apply.",
+    fundingPrivacyTitle: "Optional support through PayPal",
+    fundingPrivacyBody: "The optional support link takes you to PayPal only when you choose it. No PayPal payment scripts or forms load on this website. PayPal processes the payment under its own policies and may share payer and transaction details with us so we can manage support payments and required records. You choose the amount; fees or currency conversion may apply. Support does not change access to BLOKU features.",
+    paypalPolicy: "PayPal privacy policy",
   },
   nav: {
     features: "Features",
@@ -32,7 +42,7 @@ const en: Copy = {
     demoTitle: "Your attention belongs to you.",
     demoBody:
       "Try this interactive example. Turn protection on, then hide the distractions. The rest of the page stays yours.",
-    featureEyebrow: "Small extension. Useful controls.",
+    featureEyebrow: "Your browser. Your controls.",
     featureTitle: "Keep the good parts.",
     featureIntro:
       "Every tool is included. Start with ad blocking, then choose the controls that suit the way you browse.",
@@ -194,7 +204,7 @@ const en: Copy = {
     troubleshooting: [
       {
         title: "A website looks broken",
-        body: "Pause BLOKU for the site and reload. If that fixes it, allow the site or turn controls off one at a time to find the cause.",
+        body: "Pause BLOKU for the site. Save unfinished work, then choose “Reload page” in BLOKU's popup. A site's ad pause and changes to hidden elements may need a reload to apply fully, including after later filtering changes, especially with embedded pages already open. If the problem clears, allow the site or turn controls off one at a time to find the cause. Focus restrictions still apply.",
       },
       {
         title: "I can still see an ad",
@@ -213,7 +223,7 @@ const en: Copy = {
     sections: [
       {
         title: "What the extension stores",
-        body: "BLOKU processes website addresses, network request and frame context, and page content locally to filter ads and trackers, hide elements and apply your chosen privacy and focus controls. Its filtering library observes requests and navigation temporarily; persistent request logging and telemetry are disabled. Browser storage holds settings, filter state, site exceptions, saved selectors, local rules, focus profiles and session deadlines. Daily allowances use observed active time only on sites you configure; idle periods, unfocused windows and long observation gaps do not count. By default, only today's counters needed for allowances are kept. Optional local history retains summaries for up to 90 days; turning history off deletes older summaries.",
+        body: "BLOKU processes website addresses, network request and frame context, and page content locally to filter ads and trackers, hide elements and apply your chosen privacy and focus controls. Its filtering library observes requests and navigation temporarily; persistent request logging and telemetry are disabled. Browser storage holds settings, filter state, site exceptions, saved selectors, local rules, focus profiles and session deadlines. Daily allowances use observed active time only on sites you configure; idle periods, unfocused windows and long observation gaps do not count. By default, only today's counters needed for allowances are kept. Optional local history retains summaries for up to 90 days; turning history off deletes older summaries. The filtering library also temporarily processes request and response headers, which may include Cookie and Set-Cookie values containing session identifiers. These details are processed locally, are not retained as request logs or uploaded by BLOKU, and are not used to change cookies.",
       },
       {
         title: "What the extension sends",
@@ -221,7 +231,7 @@ const en: Copy = {
       },
       {
         title: "The website",
-        body: "This website does not load Google Analytics or other analytics scripts. It stores your theme preference in your browser. Our hosting provider processes the ordinary request information needed to deliver the site. Links to the Chrome Web Store and other services follow those services' policies.",
+        body: "This website does not load Google Analytics or other analytics scripts. It stores your theme preference in your browser. Our hosting provider processes the ordinary request information needed to deliver the site. Links to the Chrome Web Store and other services follow those services' policies. Chrome automatically opens this website’s welcome page after a fresh installation and its goodbye page after uninstalling BLOKU. These separate website visits expose ordinary request metadata, such as your IP address, browser request headers and access time, to the website host. BLOKU does not append identifiers, visited website addresses, settings or local activity to these page URLs. These visits are separate from locally processed browsing history; using BLOKU requires no account or license.",
       },
       {
         title: "Support and previous payments",
@@ -324,7 +334,7 @@ const en: Copy = {
     rights: "All rights reserved.",
     version: "Version 2.0",
     allFree: "Every feature is free.",
-    updated: "Updated November 1, 2026",
+    updated: "Updated November 2, 2026",
   },
 };
 export default en;

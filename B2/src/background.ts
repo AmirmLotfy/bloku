@@ -3,6 +3,10 @@ import { createRepository } from './repository';
 import { validateState, V2_STORAGE_KEY } from './migration';
 import { LOCALES, domainMatches, normalizeDomain, type StateV2 } from './model';
 import { activeFocusDomains, addObservedActivity, observedSeconds, reconcileSessions, startFocus, type ActivityObservation } from './focus';
+import { lifecycleUrl, openWelcomeOnce } from './lifecycle';
+import { presetSiteForUrl, elementSelectors, changeElementHide, restoreSiteHides } from './distraction-scopes';
+import presetDefinitions from '../data/presets.json';
+import { editableSettingsKey } from './settings-key';
 
 const repository = createRepository(chrome.storage.local);
 const engine = createBlokuEngine({ documentBlockingPageUrl: chrome.runtime.getURL('blocked.html') });
@@ -11,6 +15,18 @@ const navigationStarts = new Map<number, number>();
 let lastObservation: ActivityObservation | null = null;
 let queue: Promise<unknown> = Promise.resolve();
 let engineInputKey = '';
+// SDK configuration replaces document-bound DNR allowances. Existing paused
+// documents need a new committed navigation before their full pause is effective.
+const pauseReloadTabs = new Map<number, number>();
+
+async function markPausedDocumentsForReload(state: StateV2): Promise<void> {
+  const tabs = await chrome.tabs.query({});
+  pauseReloadTabs.clear();
+  if (state.preferences.adsEnabled) for (const tab of tabs) {
+    const host = normalizeDomain(tab.url);
+    if (tab.id !== undefined && host && state.sitePolicies.some(policy => domainMatches(host, policy.domain) && (policy.adsPausedUntil === null || policy.adsPausedUntil > Date.now()))) pauseReloadTabs.set(tab.id, Date.now());
+  }
+}
 
 function serialize<T>(operation: () => Promise<T>): Promise<T> {
   const result = queue.then(operation, operation);
@@ -33,6 +49,9 @@ async function applyEngine(state: StateV2, force = false): Promise<EngineStatus>
   const key = JSON.stringify(input);
   if (!force && key === engineInputKey && engine.getStatus().ok) return engine.getStatus();
   const result = await engine.apply(input);
+  // Failed applications can also reconfigure the SDK while restoring rules.
+  // Conservatively require reload for paused documents in either outcome.
+  await markPausedDocumentsForReload(result.ok ? state : await repository.get());
   if (result.ok) engineInputKey = key;
   return result;
 }
@@ -86,6 +105,7 @@ async function updateState(change: (previous: StateV2) => StateV2 | Promise<Stat
   // Notification failures do not undo an already committed configuration.
   await notifyPages().catch(() => undefined);
   await enforceOpenFocusTabs(saved);
+  if (saved.preferences.locale !== previous.preferences.locale) await chrome.runtime.setUninstallURL(lifecycleUrl(saved.preferences.locale, 'bye')).catch(() => undefined);
   return saved;
 }
 
@@ -130,12 +150,15 @@ const ready = (async () => {
     if (typeof value.at === 'number' && Number.isFinite(value.at) && (value.host === null || normalizeDomain(value.host) === value.host) && typeof value.focused === 'boolean' && typeof value.active === 'boolean') lastObservation = value as ActivityObservation;
   }
   const result = await engine.initialize(inputFor(state));
+  await markPausedDocumentsForReload(state);
   if (result.ok) engineInputKey = JSON.stringify(inputFor(state));
   await refreshAlarms(state);
   if (result.ok) await enforceOpenFocusTabs(state);
   await chrome.declarativeNetRequest.setExtensionActionOptions({ displayActionCountAsBadgeText: true });
   await chrome.contextMenus.removeAll();
   chrome.contextMenus.create({ id: 'bloku-hide-element', title: chrome.i18n.getMessage('hideElement') || 'Hide an element with BLOKU', contexts: ['page', 'selection', 'image', 'link', 'video'], documentUrlPatterns: ['http://*/*', 'https://*/*'] });
+  chrome.contextMenus.create({ id: 'bloku-restore-elements', title: chrome.i18n.getMessage('restoreElements') || 'Restore this site’s saved element hides', contexts: ['page', 'selection', 'image', 'link', 'video'], documentUrlPatterns: ['http://*/*', 'https://*/*'] });
+  await chrome.runtime.setUninstallURL(lifecycleUrl(state.preferences.locale, 'bye')).catch(() => undefined);
 })();
 // Retain the error for UI recovery rather than an unhandled worker rejection.
 void ready.catch(() => undefined);
@@ -159,7 +182,10 @@ async function pageConfig(sender: chrome.runtime.MessageSender) {
   const host = contentHost(sender);
   if (!host) throw new Error('This request must come from a normal website.');
   const state = await repository.get();
-  const matching = (map: Record<string, string[]>) => [...new Set(Object.entries(map).filter(([domain]) => domainMatches(host, domain)).flatMap(([, values]) => values))];
+  const site = sender.frameId === 0 ? host : normalizeDomain(sender.tab?.url);
+  if (!site) throw new Error('Open a normal website before using page controls.');
+  const isTop = sender.frameId === 0;
+  const presetSite = isTop ? presetSiteForUrl(sender.url) : undefined;
   const { rejectConsent, cleanUrls, gpc, disableAutoplay, adsEnabled } = state.preferences;
   await chrome.scripting.executeScript({
     target: sender.documentId ? { tabId: sender.tab!.id!, documentIds: [sender.documentId] } : { tabId: sender.tab!.id!, frameIds: [sender.frameId ?? 0] },
@@ -184,7 +210,7 @@ async function pageConfig(sender: chrome.runtime.MessageSender) {
     },
     args: [gpc],
   }).catch(() => undefined);
-  return { ok: true, host, preferences: { rejectConsent, cleanUrls, gpc, disableAutoplay }, presets: matching(state.distractionPresets), selectors: matching(state.distractionRules), locale: state.preferences.locale, adsEnabled };
+  return { ok: true, host, site, preferences: { rejectConsent, cleanUrls, gpc, disableAutoplay: disableAutoplay && isTop && presetSite === 'youtube.com' }, presets: presetSite ? state.distractionPresets[presetSite] ?? [] : [], selectors: elementSelectors(state, site, host, isTop), locale: state.preferences.locale, adsEnabled };
 }
 
 async function activeTab() { const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true }); return tab; }
@@ -206,18 +232,19 @@ async function handle(action: string, payload: unknown, sender: chrome.runtime.M
   if (action === 'SAVE_PICKER_RULE' || action === 'REMOVE_PICKER_RULE') {
     const host = contentHost(sender);
     const data = record(payload);
-    if (!host || sender.frameId !== 0 || data.domain !== host || typeof data.selector !== 'string' || !data.selector.trim() || data.selector.length > 4096 || /[{}\x00-\x1f]|\/\*|url\s*\(/i.test(data.selector)) throw new Error('Invalid element-hiding request.');
+    const site = sender.frameId === 0 ? host : normalizeDomain(sender.tab?.url);
+    if (!host || !site || !Number.isSafeInteger(sender.frameId) || sender.frameId! < 0 || data.domain !== host || typeof data.selector !== 'string' || !data.selector.trim() || data.selector.length > 4096 || /[{}\x00-\x1f]|\/\*|url\s*\(/i.test(data.selector)) throw new Error('Invalid element-hiding request.');
     if (action === 'SAVE_PICKER_RULE') {
-      const validation = await chrome.scripting.executeScript({ target: { tabId: sender.tab!.id!, frameIds: [0] }, func: (selector: string) => { try { document.querySelector(selector); return true; } catch { return false; } }, args: [data.selector] });
+      const validation = await chrome.scripting.executeScript({ target: { tabId: sender.tab!.id!, frameIds: [sender.frameId!] }, func: (selector: string) => { try { document.querySelector(selector); return true; } catch { return false; } }, args: [data.selector] });
       if (!validation[0]?.result) throw new Error('Invalid CSS selector.');
     }
     const selector = data.selector;
-    await updateState(state => ({ ...state, distractionRules: { ...state.distractionRules, [host]: action === 'SAVE_PICKER_RULE' ? [...new Set([...(state.distractionRules[host] ?? []), selector])] : (state.distractionRules[host] ?? []).filter(value => value !== selector) } }));
+    await updateState(state => changeElementHide(state, site, host, sender.frameId === 0, selector, action === 'REMOVE_PICKER_RULE'));
     return pageConfig(sender);
   }
   if (!isTrustedPage(sender)) throw new Error('This action is only available from BLOKU settings.');
   if (action === 'GET_STATE') return { ok: true, state: await repository.get(), engine: engine.getStatus(), buildInfo: ENGINE_BUILD_INFO, lists: PACKAGED_LISTS.map(({ id, name, ruleCount, version, updatedAt }) => ({ id, name, ruleCount, version, updatedAt })) };
-  if (action === 'GET_TAB') return { ok: true, tab: await activeTab() };
+  if (action === 'GET_TAB') { const tab = await activeTab(); return { ok: true, tab, pauseReloadRequired: tab?.id !== undefined && pauseReloadTabs.has(tab.id) }; }
   if (action === 'GET_MATCHES') {
     const data = record(payload);
     const tab = await activeTab();
@@ -231,24 +258,72 @@ async function handle(action: string, payload: unknown, sender: chrome.runtime.M
     const data = record(payload);
     const tab = await activeTab();
     if (!tab?.id || data.tabId !== tab.id || !normalizeDomain(tab.url)) throw new Error('Open a normal website to hide an element.');
-    await chrome.tabs.sendMessage(tab.id, { action: 'BLOKU_PICKER_START' }, { frameId: 0 });
+    await openPicker(tab.id, 0);
     return { ok: true, state: await repository.get(), engine: engine.getStatus() };
   }
+  if (action === 'RELOAD_PAGE') {
+    const data = record(payload), tab = await activeTab();
+    if (!tab?.id || data.tabId !== tab.id || !normalizeDomain(tab.url)) throw new Error('Reload the current website only.');
+    await chrome.tabs.reload(tab.id);
+    return { ok: true };
+  }
+  let expectedSettings: string | undefined;
+  if (action === 'SAVE_SETTINGS' || action === 'SAVE_IMPORT') {
+    const data = record(payload);
+    if (typeof data.base !== 'string' || data.base.length > 2_000_000) throw new Error('Invalid settings revision.');
+    expectedSettings = data.base;
+    payload = data.state;
+    if (action === 'SAVE_IMPORT') action = 'IMPORT_STATE';
+  }
   let state: StateV2;
-  if (action === 'UPDATE_STATE' || action === 'IMPORT_STATE') {
+  if (action === 'SET_ADS_ENABLED') {
+    const data = record(payload);
+    if (typeof data.enabled !== 'boolean') throw new Error('Invalid protection setting.');
+    state = await updateState(previous => ({ ...previous, preferences: { ...previous.preferences, adsEnabled: data.enabled as boolean } }));
+  } else if (action === 'SET_THEME') {
+    const data = record(payload);
+    if (data.theme !== 'light' && data.theme !== 'dark' && data.theme !== 'system') throw new Error('Invalid appearance setting.');
+    const theme = data.theme;
+    state = await updateState(previous => ({ ...previous, preferences: { ...previous.preferences, theme } }));
+  } else if (action === 'SET_SITE_PRESET') {
+    const data = record(payload);
+    if (typeof data.site !== 'string' || !Object.hasOwn(presetDefinitions, data.site) || typeof data.group !== 'string' || typeof data.enabled !== 'boolean') throw new Error('Invalid distraction setting.');
+    const site = data.site as keyof typeof presetDefinitions, group = data.group;
+    if (!presetDefinitions[site].groups.some(item => item.id === group)) throw new Error('Unsupported distraction setting.');
+    state = await updateState(previous => {
+      const choices = new Set(previous.distractionPresets[site] ?? []);
+      data.enabled ? choices.add(group) : choices.delete(group);
+      const next = { ...previous.distractionPresets, [site]: [...choices] };
+      if (site === 'x.com' || site === 'twitter.com') { next['x.com'] = [...choices]; next['twitter.com'] = [...choices]; }
+      return { ...previous, distractionPresets: next };
+    });
+  } else if (action === 'REMOVE_SAVED_HIDE') {
+    const data = record(payload), site = normalizeDomain(data.domain), frame = data.frame === undefined ? null : normalizeDomain(data.frame);
+    if (!site || data.domain !== site || (data.frame !== undefined && (!frame || data.frame !== frame)) || typeof data.selector !== 'string' || data.selector.length > 4096) throw new Error('Invalid saved element hide.');
+    state = await updateState(previous => changeElementHide(previous, site, frame ?? site, frame === null, data.selector as string, true));
+  } else if (action === 'RESTORE_ALL_HIDES') {
+    state = await updateState(previous => ({ ...previous, distractionRules: {}, embeddedHides: [] }));
+  } else if (action === 'UPDATE_STATE' || action === 'IMPORT_STATE' || action === 'SAVE_SETTINGS') {
     if (JSON.stringify(payload).length > 2_000_000) throw new Error('Settings are too large.');
     validateState(payload);
     if (action === 'IMPORT_STATE' && payload.focusSessions.some(session => session.endsAt > Date.now())) throw new Error('End timed sessions before importing this settings file. Active sessions are not imported.');
-    state = await updateState(previous => ({
+    state = await updateState(previous => {
+      if (expectedSettings !== undefined && editableSettingsKey(previous) !== expectedSettings) throw new Error('SETTINGS_CONFLICT');
+      return ({
       ...previous,
       preferences: structuredClone(payload.preferences),
       sitePolicies: structuredClone(payload.sitePolicies),
       distractionPresets: structuredClone(payload.distractionPresets),
       distractionRules: structuredClone(payload.distractionRules),
+      embeddedHides: structuredClone(payload.embeddedHides ?? []),
       userRulesText: payload.userRulesText,
       focusProfiles: structuredClone(payload.focusProfiles),
       focusSessions: previous.focusSessions.filter(session => payload.focusProfiles.some(profile => profile.id === session.profileId)),
-    }));
+    }); });
+  } else if (action === 'RESTORE_SITE_HIDES') {
+    const data = record(payload), tab = await activeTab(), site = normalizeDomain(tab?.url);
+    if (!site || data.domain !== site || data.tabId !== tab?.id) throw new Error('Restore hides for the current website only.');
+    state = await updateState(previous => restoreSiteHides(previous, site));
   } else if (action === 'CLEAR_ACTIVITY') {
     state = await updateState(previous => ({ ...previous, activity: [] }));
   } else if (action === 'START_FOCUS') {
@@ -284,11 +359,40 @@ chrome.tabs.onActivated.addListener(scheduleObservation);
 chrome.tabs.onUpdated.addListener((_tabId, info) => { if (info.url || info.status === 'complete') scheduleObservation(); });
 chrome.windows.onFocusChanged.addListener(scheduleObservation);
 chrome.idle.onStateChanged.addListener(scheduleObservation);
+// Recompute consumer-route controls on real SPA transitions without patching page history.
+chrome.webNavigation.onHistoryStateUpdated.addListener(details => {
+  if (details.frameId !== 0 || !normalizeDomain(details.url)) return;
+  void ready.then(() => chrome.tabs.sendMessage(details.tabId, { action: 'BLOKU_REFRESH_CONFIG' }, { frameId: 0 })).catch(() => undefined);
+});
 chrome.webNavigation.onCommitted.addListener(details => {
   if (details.frameId !== 0) return;
   navigationStarts.set(details.tabId, Date.now());
   void chrome.storage.session.set({ blokuNavigationStarts: Object.fromEntries(navigationStarts) });
+  const committedAt = Date.now();
+  void serialize(async () => { await ready; const requiredAt = pauseReloadTabs.get(details.tabId); if (requiredAt !== undefined && committedAt >= requiredAt) pauseReloadTabs.delete(details.tabId); });
 });
-chrome.tabs.onRemoved.addListener(tabId => { navigationStarts.delete(tabId); void chrome.storage.session.set({ blokuNavigationStarts: Object.fromEntries(navigationStarts) }); });
-chrome.contextMenus.onClicked.addListener((info, tab) => { if (info.menuItemId === 'bloku-hide-element' && tab?.id !== undefined) void chrome.tabs.sendMessage(tab.id, { action: 'BLOKU_PICKER_START' }, { frameId: 0 }).catch(() => undefined); });
+chrome.tabs.onRemoved.addListener(tabId => { navigationStarts.delete(tabId); pauseReloadTabs.delete(tabId); void chrome.storage.session.set({ blokuNavigationStarts: Object.fromEntries(navigationStarts) }); });
+async function openPicker(tabId: number, frameId: number, fromContextMenu = false): Promise<void> {
+  const message = { action: 'BLOKU_PICKER_START', fromContextMenu };
+  try { await chrome.tabs.sendMessage(tabId, message, { frameId }); }
+  catch {
+    // Existing pages may not have this version's content script after an update.
+    await chrome.scripting.executeScript({ target: { tabId, frameIds: [frameId] }, files: ['content.js'] });
+    await chrome.tabs.sendMessage(tabId, message, { frameId });
+  }
+}
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (tab?.id === undefined) return;
+  void serialize(async () => {
+    await ready;
+    if (info.menuItemId === 'bloku-hide-element') await openPicker(tab.id!, info.frameId ?? 0, true);
+    if (info.menuItemId === 'bloku-restore-elements') {
+      const site = normalizeDomain(tab.url);
+      if (site) await updateState(previous => restoreSiteHides(previous, site));
+    }
+  }).catch(() => chrome.action.openPopup({ windowId: tab.windowId }).catch(() => undefined));
+});
+chrome.runtime.onInstalled.addListener(details => {
+  void serialize(async () => { await ready; const state = await repository.get(); await openWelcomeOnce(details.reason, state.preferences.locale, chrome.storage.local, url => chrome.tabs.create({ url })); }).catch(() => undefined);
+});
 chrome.commands.onCommand.addListener(command => { if (command === 'toggle-protection') void serialize(async () => { await ready; await updateState(previous => ({ ...previous, preferences: { ...previous.preferences, adsEnabled: !previous.preferences.adsEnabled } })); }).catch(() => undefined); });

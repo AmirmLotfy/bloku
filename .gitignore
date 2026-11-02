@@ -19,3 +19,6 @@ B2/engine/gate-generated/
 B2/engine/gate-extension/
 
 B2/scripts/v2-runtime-efe04b-check.mjs
+
+# Historical generated builds are never current submission inputs.
+B2/legacy-builds/

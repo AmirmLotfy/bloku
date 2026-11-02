@@ -16,6 +16,7 @@ const DIST = path.join(B2, 'dist');
 const OUTPUT = path.join(ROOT, 'artifacts/accessibility');
 const LOCALES = ['en', 'ar', 'es', 'pt_BR', 'fr', 'de', 'ja', 'hi'];
 const SECTIONS = ['protection', 'distractions', 'focus', 'rules', 'activity', 'about'];
+const POPUP_DISCLOSURES = ['distraction-controls', 'protection-controls', 'focus-controls'];
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 const relative = absolute => path.relative(ROOT, absolute).split(path.sep).join('/');
@@ -62,8 +63,8 @@ async function run({ selected, expected, screenshots }) {
     checks: [], screenshots: [], errors: [], cleanupEvents: [], externalRequests: [],
     limits: [
       'Automated Chromium UI checks are not a WCAG conformance certification or a screen-reader usability test.',
-      'Popup content is opened in an extension tab at popup-sized viewports; the native Chrome toolbar popover itself is not exercised.',
-      'Only native chrome.tabs.setZoom with observed layout/device-pixel changes counts as a 200% zoom check. Unsupported or unobserved native zoom is recorded as SKIP; no CSS zoom or transform substitutes are used.',
+      'Popup content is audited collapsed and expanded in an extension tab at its intrinsic 380px width. This does not qualify native toolbar preferred sizing or popover zoom.',
+      'Only options-page chrome.tabs.setZoom with observed layout/device-pixel changes counts as the options 200% check. Native toolbar-popup 200% zoom is explicitly SKIP: tab zoom is not a substitute, and DPR 2 can be normal display density.',
       'Focus checks inspect real keyboard navigation, native focus-visible/focus-within state, computed outline, and viewport intersection. They do not prove every indicator pixel is unobscured or establish complete color contrast.',
       'Native file/time/select control text can follow the Chrome/OS locale independently of the extension language.',
       'The fixture is local and synthetic; no public-site behavior, browser extension installation flow, assistive-technology speech, or other browser version is qualified.',
@@ -122,13 +123,14 @@ async function run({ selected, expected, screenshots }) {
     await options.evaluate(() => scrollTo(0, 0));
   }
   async function semantics(page, surface, section) {
-    const dom = await page.evaluate(() => ({ lang: document.documentElement.lang, dir: document.documentElement.dir, direction: getComputedStyle(document.body).direction, headings: [...document.querySelectorAll('h1')].map(node => node.textContent), statuses: document.querySelectorAll('[role=status]').length, positiveTabIndexes: [...document.querySelectorAll('[tabindex]')].filter(node => Number(node.getAttribute('tabindex')) > 0).map(node => node.outerHTML.slice(0, 200)) }));
+    const dom = await page.evaluate(() => ({ lang: document.documentElement.lang, dir: document.documentElement.dir, direction: getComputedStyle(document.body).direction, headings: [...document.querySelectorAll('h1')].map(node => node.textContent), statuses: document.querySelectorAll('[role=status]').length, positiveTabIndexes: [...document.querySelectorAll('[tabindex]')].filter(node => Number(node.getAttribute('tabindex')) > 0).map(node => node.outerHTML.slice(0, 200)), unnamedIconButtons: [...document.querySelectorAll('button')].filter(node => node.querySelector('svg') && !node.textContent.trim() && !node.getAttribute('aria-label')?.trim()).map(node => node.id || node.className) }));
     assert.equal(dom.lang, locale.replace('_', '-')); assert.equal(dom.dir, locale === 'ar' ? 'rtl' : 'ltr'); assert.equal(dom.direction, dom.dir);
     assert.equal(dom.headings.length, 1, 'One primary page heading is expected'); assert.ok(dom.statuses >= 1, 'Status/live region is missing'); assert.deepEqual(dom.positiveTabIndexes, [], 'Positive tabindex changes the native reading order');
+    assert.deepEqual(dom.unnamedIconButtons, [], 'Icon-only buttons require explicit accessible labels');
     assert.equal(dom.headings[0], surface === 'options' ? input.locales[locale].messages[section] : 'a11y.bloku.test');
     const session = await instrument(page.target());
     const { nodes } = await session.send('Accessibility.getFullAXTree');
-    const roles = new Set(['button', 'checkbox', 'combobox', 'textbox', 'spinbutton', 'link', 'listbox', 'radio', 'switch', 'slider', 'searchbox']);
+    const roles = new Set(['button', 'checkbox', 'combobox', 'textbox', 'spinbutton', 'link', 'listbox', 'radio', 'switch', 'slider', 'searchbox', 'DisclosureTriangle']);
     const controls = nodes.filter(node => !node.ignored && roles.has(node.role?.value));
     assert.ok(controls.length, 'No interactive controls appeared in the native accessibility tree');
     const missing = controls.filter(node => !String(node.name?.value || '').trim()).map(node => ({ role: node.role?.value, backendDOMNodeId: node.backendDOMNodeId }));
@@ -156,7 +158,10 @@ async function run({ selected, expected, screenshots }) {
     await page.bringToFront();
     const count = await page.evaluate(() => {
       scrollTo(0, 0);
-      return [...document.querySelectorAll('button,input,select,textarea,a[href],[tabindex]')].filter(node => !node.disabled && node.tabIndex >= 0 && getComputedStyle(node).visibility !== 'hidden' && node.getClientRects().length).length;
+      return [...document.querySelectorAll('button,input,select,textarea,a[href],summary,[tabindex]')].filter(node => {
+        const closed = node.closest('details:not([open])');
+        return !node.disabled && node.tabIndex >= 0 && (!closed || node === closed.querySelector(':scope > summary')) && node.checkVisibility() && getComputedStyle(node).visibility !== 'hidden' && node.getClientRects().length;
+      }).length;
     });
     // A real click in the page's empty top corner resets the sequential focus start.
     // Native time controls can use several Tab stops inside one input; retain these
@@ -169,10 +174,10 @@ async function run({ selected, expected, screenshots }) {
       await pause(100);
       const focus = await page.evaluate(() => {
         const node = document.activeElement;
-        const all = [...document.querySelectorAll('button,input,select,textarea,a[href],[tabindex]')];
+        const all = [...document.querySelectorAll('button,input,select,textarea,a[href],summary,[tabindex]')];
         const index = all.indexOf(node); if (index < 0) return null;
         const r = node.getBoundingClientRect(), style = getComputedStyle(node);
-        return { index, tag: node.tagName, type: node.getAttribute('type'), text: (node.getAttribute('aria-label') || node.closest('label')?.textContent || node.textContent || '').trim().slice(0, 130), focusVisible: node.matches(':focus-visible'), focusWithin: node.matches(':focus-within'), outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth), outlineColor: style.outlineColor, inViewport: r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth };
+        return { index, tag: node.tagName, type: node.getAttribute('type'), disclosureId: node.closest('details')?.id || null, text: (node.getAttribute('aria-label') || node.closest('label')?.textContent || node.textContent || '').trim().slice(0, 130), focusVisible: node.matches(':focus-visible'), focusWithin: node.matches(':focus-within'), outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth), outlineColor: style.outlineColor, inViewport: r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth };
       });
       if (!focus) { browserBoundaryStops++; continue; }
       if (focus.type === 'time') await shot(page, `${surface}-${section}-time-input-focus`);
@@ -183,6 +188,7 @@ async function run({ selected, expected, screenshots }) {
       if (visited.length === 1 && ['protection', 'popup'].includes(section)) await shot(page, `${surface}-keyboard`);
     }
     assert.equal(unique.size, targetCount, `Tab did not reach all ${targetCount} expected interactive controls within the bounded traversal`);
+    if (surface === 'popup') for (const id of POPUP_DISCLOSURES) assert.ok(visited.some(item => item.tag === 'SUMMARY' && item.disclosureId === id), `Tab did not reach the ${id} summary`);
     return { tabbableCount: count, uniqueControlsVisited: unique.size, tabStopsObserved: visited.length, browserBoundaryStops, truncatedAt: count > limit ? limit : null, visited };
   }
   async function reducedMotion(page) {
@@ -200,7 +206,7 @@ async function run({ selected, expected, screenshots }) {
       return chrome.tabs.getZoom(tab.id);
     }, value);
   }
-  async function nativeZoom(page, surface) {
+  async function nativeOptionsZoom(page) {
     let applied = false;
     try {
       // Remove emulated device metrics so the real tab zoom must alter the native renderer.
@@ -208,7 +214,7 @@ async function run({ selected, expected, screenshots }) {
       const session = await instrument(page.target());
       const { targetInfo } = await session.send('Target.getTargetInfo');
       const { windowId } = await session.send('Browser.getWindowForTarget', { targetId: targetInfo.targetId });
-      await session.send('Browser.setWindowBounds', { windowId, bounds: { width: surface === 'popup' ? 380 : 1280, height: 1000 } });
+      await session.send('Browser.setWindowBounds', { windowId, bounds: { width: 1280, height: 1000 } });
       await zoomFactor(page, 1);
       const before = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, dpr: devicePixelRatio }));
       const factor = await zoomFactor(page, 2); applied = true;
@@ -224,9 +230,66 @@ async function run({ selected, expected, screenshots }) {
     await check(surface, mode, `${section}: no horizontal document overflow`, () => overflow(page));
     if (includeKeyboard) await check(surface, mode, `${section}: actual Tab focus and visible outline`, () => keyboard(page, surface, section));
   }
+  async function disclosureState(page, expectedOpen) {
+    const items = await page.evaluate(ids => ids.map(id => {
+      const node = document.getElementById(id), summary = node?.querySelector(':scope > summary');
+      const controls = node ? [...node.querySelectorAll('button,input,select,textarea,a[href]')].map(control => ({ tag: control.tagName, visible: control.checkVisibility() && control.getClientRects().length > 0 && getComputedStyle(control).visibility !== 'hidden' })) : [];
+      return { id, tag: node?.tagName, open: node?.open, summary: summary?.textContent.trim(), summaryCount: node?.querySelectorAll(':scope > summary').length, controls };
+    }), POPUP_DISCLOSURES);
+    const names = ['distractions', 'protection', 'focus'].map(key => input.locales[locale].messages[key]);
+    for (const [index, item] of items.entries()) {
+      assert.equal(item.tag, 'DETAILS', `Missing native disclosure ${item.id}`);
+      assert.equal(item.summaryCount, 1, `A disclosure needs exactly one direct summary: ${item.id}`);
+      assert.equal(item.summary, names[index], `Disclosure name is not localized: ${item.id}`);
+      assert.equal(item.open, expectedOpen, `Unexpected disclosure state: ${item.id}`);
+      assert.ok(item.controls.length > 0, `Expected fixture controls within ${item.id}`);
+      assert.ok(item.controls.every(control => control.visible === expectedOpen), `Collapsed controls must be hidden and expanded controls visible: ${item.id}`);
+    }
+    return items;
+  }
+  async function keyboardDisclosureState(page, desiredOpen) {
+    await page.bringToFront(); const changes = [];
+    for (const [index, id] of POPUP_DISCLOSURES.entries()) {
+      if (await page.$eval(`#${id}`, node => node.open) === desiredOpen) continue;
+      await page.mouse.click(2, 2); let reached = false, steps = 0;
+      for (; steps < 80; steps++) {
+        await page.keyboard.press('Tab'); await pause(50);
+        reached = await page.evaluate(id => document.activeElement === document.querySelector(`#${id} > summary`), id);
+        if (reached) break;
+      }
+      assert.ok(reached, `Native summary ${id} was not reachable with Tab`);
+      const focus = await page.$eval(`#${id} > summary`, node => {
+        const style = getComputedStyle(node), r = node.getBoundingClientRect();
+        return { visible: node.matches(':focus-visible'), outlineWidth: parseFloat(style.outlineWidth), outlineStyle: style.outlineStyle, outlineColor: style.outlineColor, inViewport: r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight };
+      });
+      assert.ok(focus.visible && focus.outlineWidth >= 2 && !['none', 'hidden'].includes(focus.outlineStyle) && !['transparent', 'rgba(0, 0, 0, 0)'].includes(focus.outlineColor) && focus.inViewport, `Summary focus is not visibly indicated: ${JSON.stringify({ id, focus })}`);
+      const activationKey = index % 2 ? 'Space' : 'Enter';
+      await page.keyboard.press(activationKey);
+      await until(() => page.$eval(`#${id}`, node => node.open).then(open => open === desiredOpen), `Native ${activationKey} did not toggle ${id}`);
+      changes.push({ id, desiredOpen, activationKey, tabSteps: steps + 1, focus });
+    }
+    return changes;
+  }
+  async function auditPopup(page) {
+    // This tab checks product content at its intrinsic width. It does not recreate
+    // Chrome's toolbar preferred-size calculation or native popover zoom.
+    await page.setViewport({ width: 380, height: 600, deviceScaleFactor: 1 });
+    await check('popup', 'collapsed-380px', 'native details start collapsed', () => disclosureState(page, false));
+    await auditView(page, 'popup', 'collapsed-380px', 'popup', true);
+    await shot(page, 'popup-collapsed');
+    await check('popup', 'expanded-380px', 'real Tab and Enter/Space expand all native disclosures', () => keyboardDisclosureState(page, true));
+    await check('popup', 'expanded-380px', 'expanded disclosure names and visible controls', () => disclosureState(page, true));
+    await auditView(page, 'popup', 'expanded-380px', 'popup', true);
+    await check('popup', 'expanded-380px-reduced-motion', 'browser media preference and computed motion', () => reducedMotion(page));
+    await shot(page, 'popup-expanded');
+    await check('popup', 'collapsed-380px', 'real Tab and Enter/Space collapse disclosures again', () => keyboardDisclosureState(page, false));
+    await check('popup', 'collapsed-380px', 'collapsed descendants remain hidden', () => disclosureState(page, false));
+    report.checks.push({ locale, surface: 'popup', mode: 'native-200%-zoom', name: 'native toolbar popover enlargement', status: 'SKIP', detail: { reason: 'This runner opens popup content in a tab. Tab zoom cannot establish native toolbar-popup 200% enlargement; no CSS zoom, transform or density simulation is substituted. The separate manual native-surface observation is documented in docs/ACCESSIBILITY.md.', nativePopupExercisedByThisRunner: false, textEnlargementQualified: false } });
+  }
   async function auditSurface(page, surface) {
-    const normal = { width: surface === 'popup' ? 380 : 1280, height: 1000, deviceScaleFactor: 1 };
-    const sections = surface === 'popup' ? ['popup'] : SECTIONS;
+    if (surface === 'popup') { await auditPopup(page); return; }
+    const normal = { width: 1280, height: 1000, deviceScaleFactor: 1 };
+    const sections = SECTIONS;
     await page.setViewport(normal); await page.bringToFront();
     for (const section of sections) {
       if (surface === 'options') await chooseSection(section);
@@ -238,7 +301,7 @@ async function run({ selected, expected, screenshots }) {
       if (surface === 'options') await chooseSection(section);
       await check(surface, '320px-viewport', `${section}: no horizontal document overflow`, () => overflow(page));
     }
-    const zoom = await nativeZoom(page, surface);
+    const zoom = await nativeOptionsZoom(page);
     report.checks.push({ locale, surface, mode: 'native-200%-zoom', name: 'genuine browser zoom supported and observed', status: zoom.status, detail: zoom });
     try {
       if (zoom.status === 'PASS') {

@@ -146,14 +146,14 @@ async function prepareComparators() {
   await mkdir(cache, { recursive: true });
   await mkdir(artifacts, { recursive: true });
   const prepared = {};
-  const legacyZip = path.join(root, 'bloku-extension.zip');
+  const legacyZip = process.env.BLOKU_LEGACY_ARCHIVE || path.join(root, 'legacy-builds/bloku-extension-1.1.3.zip');
   const legacyBytes = await readFile(legacyZip);
   const legacyFolder = path.join(cache, 'legacy-1.1.3');
   await extractArchive(legacyZip, legacyFolder);
   const legacyDirectory = await findManifest(legacyFolder);
   const legacy = await describeExtension(legacyDirectory);
   assert.equal(legacy.manifest.version, '1.1.3');
-  prepared['bloku-1'] = { id: 'bloku-1', name: 'Original BLOKU 1.1.3 ZIP', version: '1.1.3', source: 'B2/bloku-extension.zip (original local archive)', archiveSha256: sha256(legacyBytes), directory: legacyDirectory, ...legacy, status: 'prepared', limitation: 'Default free state only; no premium entitlement is forged. Licensing and BLOKU website hosts are DNS-blocked for all variants.' };
+  prepared['bloku-1'] = { id: 'bloku-1', name: 'Original BLOKU 1.1.3 ZIP', version: '1.1.3', source: 'B2/legacy-builds/bloku-extension-1.1.3.zip (original historical archive)', archiveSha256: sha256(legacyBytes), directory: legacyDirectory, ...legacy, status: 'prepared', limitation: 'Default free state only; no premium entitlement is forged. Licensing and BLOKU website hosts are DNS-blocked for all variants.' };
   for (const source of OFFICIAL) {
     try {
       const archive = path.join(cache, `${source.id}-${source.version}.zip`);

@@ -6,9 +6,14 @@
   "supportEmail": "support@bloku.app",
   "publisher": "Frameless",
   "publisherUrl": "https://frameless.com.eg",
-  "sponsorsUrl": null,
   "locales": [
-    { "code": "en", "tag": "en", "path": "", "dir": "ltr", "label": "English" },
+    {
+      "code": "en",
+      "tag": "en",
+      "path": "",
+      "dir": "ltr",
+      "label": "English"
+    },
     {
       "code": "ar",
       "tag": "ar",
@@ -51,7 +56,13 @@
       "dir": "ltr",
       "label": "日本語"
     },
-    { "code": "hi", "tag": "hi", "path": "hi", "dir": "ltr", "label": "हिन्दी" }
+    {
+      "code": "hi",
+      "tag": "hi",
+      "path": "hi",
+      "dir": "ltr",
+      "label": "हिन्दी"
+    }
   ],
   "features": [
     {
@@ -78,5 +89,10 @@
       "free": true,
       "claim": "Timed sessions, weekly schedules, and daily site allowances; release requires extension behavior verification."
     }
-  ]
+  ],
+  "fundingUrl": "https://www.paypal.com/ncp/payment/H2Y4B9EM6CF5C",
+  "fundingPrivacyUrl": "https://www.paypal.com/legalhub/paypal/privacy-full",
+  "sourceUrl": "https://github.com/AmirmLotfy/bloku",
+  "license": "GPL-3.0-only",
+  "minimumChromeVersion": 145
 }

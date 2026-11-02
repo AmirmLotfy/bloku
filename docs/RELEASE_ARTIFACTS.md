@@ -61,6 +61,6 @@ The optional website source archive selects only its source/public/scripts/tests
 3. Run the approved runtime/behavior gates against the exact built bytes.
 4. Run artifact `--check-only`, then create the candidates.
 5. Verify `SHA256SUMS` and inspect the ZIP-root manifest. Run any remaining exact-package acceptance checks and record their limits against these hashes.
-6. Leave store upload and publication with the owner.
+6. Prepare the existing Store item's draft with the exact verified package and assets. Leave final data-use certification, submission and publication with the owner.
 
 Repeated artifact creation from identical selected inputs produces identical ZIP bytes. A changed source archive or candidate hash invalidates any evidence that depended on the old artifact. The writer does not claim a public source repository, live release, license review, or store acceptance.

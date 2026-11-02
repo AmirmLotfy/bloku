@@ -32,15 +32,7 @@ function Logo({ compact = false }: { compact?: boolean }) {
     <span className={`brand ${compact ? "brand-compact" : ""}`}>
       <span className="brand-mark">
         <img
-          className="logo-light"
-          src="/bloku-logo-light.png"
-          width="40"
-          height="40"
-          alt=""
-        />
-        <img
-          className="logo-dark"
-          src="/bloku-logo-dark.png"
+          src="/bloku-logo.png"
           width="40"
           height="40"
           alt=""
@@ -241,7 +233,7 @@ function Demo({ copy }: { copy: Copy }) {
             <bdi>{copy.demo.domain}</bdi>
           </span>
           <span className="toolbar-logo" aria-hidden="true">
-            <img src="/bloku-logo-light.png" width="22" height="22" alt="" />
+            <img src="/bloku-logo.png" width="22" height="22" alt="" />
           </span>
         </div>
         <div
@@ -426,7 +418,7 @@ function CTA({ copy }: { copy: Copy }) {
   return (
     <section className="cta-section wrap">
       <div className="cta-symbol" aria-hidden="true">
-        <img src="/bloku-logo-light.png" width="68" height="68" alt="" />
+        <img src="/bloku-logo.png" width="68" height="68" alt="" />
       </div>
       <h2>{copy.home.ctaTitle}</h2>
       <p>{copy.home.ctaBody}</p>
@@ -434,6 +426,7 @@ function CTA({ copy }: { copy: Copy }) {
       <span className="cta-note">
         {copy.home.free} <span>·</span> {copy.home.noAccount}
       </span>
+      <Compatibility copy={copy} />
     </section>
   );
 }
@@ -442,37 +435,40 @@ function Home(context: PageContext) {
   return (
     <>
       <section className="hero wrap">
-        <a className="release-link" href={pagePath(locale, "changelog")}>
-          <span className="release-dot" />
-          {copy.home.eyebrow}
-          <ArrowRight size={14} aria-hidden="true" />
-        </a>
-        <h1>
-          {copy.home.title.split("\n").map((line, i) => (
-            <span key={line}>
-              {line}
-              {i === 0 && <br />}
-            </span>
-          ))}
-        </h1>
-        <p className="hero-intro">{copy.home.intro}</p>
-        <div className="hero-actions">
-          <Install label={copy.nav.install} />
-          <a className="button button-quiet" href="#demo">
-            {copy.home.secondary}
-            <ArrowDown size={16} aria-hidden="true" />
+        <div className="hero-copy">
+          <a className="release-link" href={pagePath(locale, "changelog")}>
+            <span className="release-dot" />
+            {copy.home.eyebrow}
+            <ArrowRight size={14} aria-hidden="true" />
           </a>
+          <h1>
+            {copy.home.title.split("\n").map((line, i) => (
+              <span key={line}>
+                {line}
+                {i === 0 && <br />}
+              </span>
+            ))}
+          </h1>
+          <p className="hero-intro">{copy.home.intro}</p>
+          <div className="hero-actions">
+            <Install label={copy.nav.install} />
+            <a className="button button-quiet" href="#demo">
+              {copy.home.secondary}
+              <ArrowDown size={16} aria-hidden="true" />
+            </a>
+          </div>
+          <ul className="trust-line">
+            {[copy.home.free, copy.home.local, copy.home.noAccount].map(
+              (text) => (
+                <li key={text}>
+                  <Check size={14} aria-hidden="true" />
+                  {text}
+                </li>
+              ),
+            )}
+          </ul>
+          <Compatibility copy={copy} />
         </div>
-        <ul className="trust-line">
-          {[copy.home.free, copy.home.local, copy.home.noAccount].map(
-            (text) => (
-              <li key={text}>
-                <Check size={14} aria-hidden="true" />
-                {text}
-              </li>
-            ),
-          )}
-        </ul>
         <Demo copy={copy} />
       </section>
       <section className="demo-intro wrap">
@@ -577,6 +573,13 @@ function FeaturePage(context: PageContext) {
     </>
   );
 }
+function Compatibility({ copy }: { copy: Copy }) {
+  return (
+    <p className="compatibility">
+      {copy.details.compatibility.replace("{version}", String(product.minimumChromeVersion))}
+    </p>
+  );
+}
 function Support({ copy, locale }: PageContext) {
   return (
     <section className="support-page wrap">
@@ -585,6 +588,7 @@ function Support({ copy, locale }: PageContext) {
         title={copy.support.title}
         intro={copy.support.intro}
       />
+      <Compatibility copy={copy} />
       <nav className="jump-links" aria-label={copy.nav.support}>
         <a href="#faq">{copy.support.faqTitle}</a>
         <a href="#troubleshooting">{copy.support.troubleshootingTitle}</a>
@@ -630,6 +634,16 @@ function Support({ copy, locale }: PageContext) {
               <ArrowRight size={16} aria-hidden="true" />
             </a>
           </section>
+          {product.fundingUrl && (
+            <section id="optional-support">
+              <h3>{copy.details.fundingTitle}</h3>
+              <p>{copy.details.fundingBody}</p>
+              <a className="text-link" href={product.fundingUrl} target="_blank" rel="noopener noreferrer">
+                {copy.details.fundingTitle}
+                <ArrowRight size={16} aria-hidden="true" />
+              </a>
+            </section>
+          )}
         </aside>
       </div>
     </section>
@@ -637,17 +651,29 @@ function Support({ copy, locale }: PageContext) {
 }
 function Document({ page, copy }: PageContext) {
   const document = page === "privacy" ? copy.privacy : copy.terms;
+  const sections = [
+    ...document.sections,
+    page === "privacy"
+      ? { title: copy.details.fundingPrivacyTitle, body: copy.details.fundingPrivacyBody }
+      : { title: copy.details.sourceLink, body: copy.details.licenseBody },
+  ];
   return (
     <article className="document-page wrap">
       <PageHero title={document.title} intro={document.intro} />
       <p className="updated">{copy.footer.updated}</p>
       <div className="document-sections">
-        {document.sections.map((section, i) => (
+        {sections.map((section, i) => (
           <section key={section.title}>
             <span className="document-number">0{i + 1}</span>
             <div>
               <h2>{section.title}</h2>
               <p>{section.body}</p>
+              {i === sections.length - 1 && (
+                <a className="text-link" href={page === "privacy" ? product.fundingPrivacyUrl : product.sourceUrl} target="_blank" rel="noopener noreferrer">
+                  {page === "privacy" ? copy.details.paypalPolicy : copy.details.sourceLink}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </a>
+              )}
             </div>
           </section>
         ))}
@@ -755,6 +781,7 @@ function Footer({ copy, locale }: PageContext) {
               <Logo />
             </a>
             <p>{copy.footer.tagline}</p>
+            <Compatibility copy={copy} />
           </div>
           <nav aria-label={copy.nav.menu}>
             {(["support", "changelog", "privacy", "terms"] as const).map(
@@ -763,6 +790,10 @@ function Footer({ copy, locale }: PageContext) {
                   {copy.nav[page]}
                 </a>
               ),
+            )}
+            <a href={product.sourceUrl} target="_blank" rel="noopener noreferrer">{copy.details.sourceLink}</a>
+            {product.fundingUrl && (
+              <a href={product.fundingUrl} target="_blank" rel="noopener noreferrer">{copy.details.fundingTitle}</a>
             )}
           </nav>
         </div>

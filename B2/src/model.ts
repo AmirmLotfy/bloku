@@ -8,12 +8,14 @@ export interface FocusSchedule { days: number[]; start: string; end: string; }
 export interface FocusProfile { id: string; name: string; domains: string[]; enabled: boolean; schedules: FocusSchedule[]; dailyAllowanceMinutes: number | null; }
 export interface FocusSession { id: string; profileId: string; startedAt: number; endsAt: number; breakUntil: number | null; }
 export interface DayActivity { date: string; domainSeconds: Record<string, number>; focusSeconds: number; }
+export interface EmbeddedHide { site: string; frame: string; selectors: string[]; }
 export interface StateV2 {
   schemaVersion: 2;
   preferences: { adsEnabled: boolean; theme: Theme; locale: Locale; listIds: string[]; rejectConsent: boolean; cleanUrls: boolean; gpc: boolean; activityEnabled: boolean; disableAutoplay: boolean; };
   sitePolicies: SitePolicy[];
   distractionPresets: Presets;
   distractionRules: Presets;
+  embeddedHides?: EmbeddedHide[];
   userRulesText: string;
   focusProfiles: FocusProfile[];
   focusSessions: FocusSession[];

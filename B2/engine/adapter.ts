@@ -1,10 +1,11 @@
-import { TsWebExtension, FilterList, type Configuration, type ConfigurationResult } from '@adguard/tswebextension/mv3';
+import { TsWebExtension, FilterList, USER_FILTER_ID, type Configuration, type ConfigurationResult } from '@adguard/tswebextension/mv3';
 import { LogLevel } from '@adguard/logger';
 import catalogJson from './generated/catalog.json';
 import buildInfoJson from './generated/build-info.json';
 import { localScriptRules } from './generated/local-script-rules.js';
 import { compilePolicy, EnginePolicyError } from './policy';
 import { EngineTransaction, type EngineDriver } from './transaction';
+import { fatalDynamicConversionErrors } from './conversion-diagnostics';
 import type { BlokuEngine, EngineInput, EngineOptions, PackagedList } from './types';
 
 export type { BlokuEngine, EngineInput, EngineOptions, EngineStatus, EngineIssue, EngineStorage } from './types';
@@ -53,8 +54,8 @@ export function createBlokuEngine(options: EngineOptions = {}): BlokuEngine {
     };
   }
 
-  async function verify(input: EngineInput, result: ConfigurationResult): Promise<void> {
-    const errors = [...result.staticFiltersStatus.errors, ...(result.dynamicRules?.errors ?? []), ...(result.dynamicRules?.limitations ?? [])];
+  async function verify(input: EngineInput, result: ConfigurationResult, userContent: string): Promise<void> {
+    const errors = [...result.staticFiltersStatus.errors, ...fatalDynamicConversionErrors(result.dynamicRules?.errors ?? [], userContent, USER_FILTER_ID), ...(result.dynamicRules?.limitations ?? [])];
     if (errors.length) throw new EnginePolicyError('conversion-or-quota', errors.map(error => error.message).join('; ').slice(0, 1000));
     const actualIds = (await chrome.declarativeNetRequest.getEnabledRulesets()).sort();
     const expectedIds = input.adsEnabled ? PACKAGED_LISTS.filter(list => input.enabledLists.includes(list.id)).map(list => `ruleset_${list.filterId}`).sort() : [];
@@ -86,7 +87,7 @@ export function createBlokuEngine(options: EngineOptions = {}): BlokuEngine {
       const config = configuration(input);
       const result = started ? await sdk.configure(config) : await sdk.start(config);
       started = true;
-      await verify(input, result);
+      await verify(input, result, config.userrules.content);
     },
   };
   const storage = options.storage ?? {
