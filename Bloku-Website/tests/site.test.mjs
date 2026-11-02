@@ -1,0 +1,238 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { JSDOM } from "jsdom";
+import {
+  product,
+  copies,
+  pagePath,
+  render,
+  serialize,
+} from "../.ssr/entry-server.js";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const manifest = JSON.parse(
+  await fs.readFile(path.join(root, "dist/route-manifest.json"), "utf8"),
+);
+const documents = new Map();
+for (const route of manifest)
+  documents.set(
+    route.path,
+    new JSDOM(await fs.readFile(path.join(root, "dist", route.file), "utf8"), {
+      url: route.canonical,
+    }).window.document,
+  );
+
+test("all eight locales have complete, nonempty copy and every feature", () => {
+  assert.equal(product.locales.length, 8);
+  const keys = (value) =>
+    typeof value === "string"
+      ? "text"
+      : Array.isArray(value)
+        ? value.map(keys)
+        : Object.fromEntries(
+            Object.entries(value).map(([k, v]) => [k, keys(v)]),
+          );
+  const shape = keys(copies.en);
+  const checkText = (value) => {
+    if (typeof value === "string") assert.ok(value.trim());
+    else Object.values(value).forEach(checkText);
+  };
+  for (const locale of product.locales) {
+    assert.deepEqual(
+      keys(copies[locale.code]),
+      shape,
+      `${locale.code} has missing copy`,
+    );
+    checkText(copies[locale.code]);
+    assert.equal(copies[locale.code].features.length, 4);
+    if (locale.code !== "en")
+      assert.notEqual(
+        copies[locale.code].meta.homeTitle,
+        copies.en.meta.homeTitle,
+      );
+  }
+});
+
+test("each route ships its own visible content, SEO, canonical, language, and direction without JavaScript", () => {
+  assert.equal(manifest.length, 96);
+  for (const route of manifest) {
+    const doc = documents.get(route.path);
+    const locale = product.locales.find((item) => item.code === route.locale);
+    assert.equal(doc.documentElement.lang, locale.tag, route.path);
+    assert.equal(doc.documentElement.dir, locale.dir, route.path);
+    assert.equal(doc.querySelectorAll("h1").length, 1, route.path);
+    assert.ok(
+      doc.querySelector("main h1").textContent.trim().length > 0 &&
+      doc.querySelector("main p").textContent.trim().length > 0,
+      route.path,
+    );
+    assert.equal(
+      doc.querySelector("link[rel=canonical]").href,
+      route.canonical,
+    );
+    assert.equal(
+      doc.querySelector('meta[property="og:url"]').content,
+      route.canonical,
+    );
+    assert.ok(doc.title.includes("BLOKU"), route.path);
+    assert.ok(doc.querySelector("meta[name=description]").content.length > 20);
+    assert.equal(
+      doc.querySelector("meta[name=robots]").content,
+      route.indexable ? "index, follow" : "noindex, follow",
+    );
+    assert.equal(doc.querySelectorAll("meta[name=robots]").length, 1);
+    assert.equal(doc.querySelectorAll("link[rel=canonical]").length, 1);
+    assert.ok(!doc.documentElement.outerHTML.includes("<!--app-"), route.path);
+  }
+});
+
+test("localized alternate links preserve page identity and are reciprocal", () => {
+  for (const route of manifest.filter((item) => item.page !== "not-found")) {
+    const doc = documents.get(route.path);
+    const alternates = [
+      ...doc.querySelectorAll("link[rel=alternate][hreflang]"),
+    ];
+    assert.equal(alternates.length, 9, route.path);
+    for (const locale of product.locales) {
+      const target = pagePath(locale.code, route.page);
+      const link = alternates.find((item) => item.hreflang === locale.tag);
+      assert.equal(link.href, `${product.siteUrl}${target}`);
+      const targetDoc = documents.get(target);
+      assert.ok(
+        targetDoc.querySelector(
+          `link[rel=alternate][href="${route.canonical}"]`,
+        ),
+        `${route.path} is not reciprocal`,
+      );
+    }
+    assert.equal(
+      alternates.find((item) => item.hreflang === "x-default").href,
+      `${product.siteUrl}${pagePath("en", route.page)}`,
+    );
+  }
+});
+
+test("every local navigation destination and fragment resolves, including help anchors", () => {
+  for (const route of manifest) {
+    const doc = documents.get(route.path);
+    for (const anchor of doc.querySelectorAll("a[href]")) {
+      const url = new URL(anchor.href);
+      if (url.origin !== product.siteUrl) continue;
+      const target = documents.get(url.pathname);
+      assert.ok(target, `${route.path} links to missing ${url.pathname}`);
+      if (url.hash)
+        assert.ok(
+          target.getElementById(decodeURIComponent(url.hash.slice(1))),
+          `${route.path} missing fragment ${url.href}`,
+        );
+    }
+    const switches = doc.querySelectorAll("[role=switch]");
+    for (const control of switches) {
+      assert.ok(control.getAttribute("aria-label"));
+      assert.match(control.getAttribute("aria-checked"), /^(true|false)$/);
+    }
+  }
+});
+
+test("no checkout, analytics, fabricated rating, search schema, or active donation path is published", () => {
+  for (const route of manifest) {
+    const doc = documents.get(route.path);
+    assert.doesNotMatch(
+      doc.documentElement.outerHTML,
+      /googletagmanager|google-analytics|gtag\(|aggregateRating|ratingValue|SearchAction|Install &amp; Subscribe|\$4\.99|\$39\.99|enterprise-grade|ML-powered|1000/,
+    );
+    for (const link of doc.querySelectorAll("a[href]"))
+      assert.doesNotMatch(link.href, /checkout|polar\.sh|sponsors/);
+    for (const script of doc.querySelectorAll("script[src]"))
+      assert.equal(new URL(script.src).origin, product.siteUrl);
+    const json = JSON.parse(
+      doc.querySelector('script[type="application/ld+json"]').textContent,
+    );
+    assert.ok(json);
+    if (route.page === "home") {
+      const software = json.find(
+        (item) => item["@type"] === "SoftwareApplication",
+      );
+      assert.equal(software.offers.price, "0");
+      assert.equal(software.downloadUrl, product.storeUrl);
+    }
+    if (route.page === "bye")
+      assert.equal(
+        doc.querySelectorAll("form").length,
+        0,
+        "No feedback form without a backend",
+      );
+  }
+});
+
+test("noindex is isolated to utility pages and never leaks into subsequent renders", () => {
+  assert.match(render("en", "hey").head, /noindex, follow/);
+  assert.match(render("ar", "not-found").head, /noindex, follow/);
+  assert.match(render("en", "home").head, /content="index, follow"/);
+  assert.doesNotMatch(render("en", "home").head, /noindex/);
+  assert.doesNotMatch(
+    serialize({ payload: "</script><script>alert(1)</script>" }),
+    /<\/script>/,
+  );
+});
+
+test("sitemap contains only the 72 indexable canonical URLs and no utility routes", async () => {
+  const xml = await fs.readFile(path.join(root, "dist/sitemap.xml"), "utf8");
+  const doc = new JSDOM(xml, { contentType: "application/xml" }).window
+    .document;
+  assert.equal(doc.querySelectorAll("url").length, 72);
+  for (const item of manifest.filter((route) => route.indexable))
+    assert.ok(
+      [...doc.querySelectorAll("loc")].some(
+        (node) => node.textContent === item.canonical,
+      ),
+    );
+  assert.doesNotMatch(xml, /<loc>[^<]*(?:\/hey|\/bye|\/404)<\/loc>|2026-01-24/);
+});
+
+test("preview server returns actual 404 status and preserves localized errors", async () => {
+  const port = 43971;
+  const child = spawn(process.execPath, ["scripts/serve.mjs"], {
+    cwd: root,
+    env: { ...process.env, PORT: String(port) },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  try {
+    await Promise.race([
+      once(child.stdout, "data"),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Preview did not start")), 5000),
+      ),
+    ]);
+    const good = await fetch(`http://127.0.0.1:${port}/ar/features/focus`);
+    assert.equal(good.status, 200);
+    assert.match(await good.text(), /lang="ar" dir="rtl"/);
+    const missing = await fetch(`http://127.0.0.1:${port}/ar/does-not-exist`);
+    assert.equal(missing.status, 404);
+    assert.match(await missing.text(), /lang="ar" dir="rtl"/);
+    const source = await fetch(`http://127.0.0.1:${port}/src/main.tsx`);
+    assert.equal(source.status, 404);
+    const redirect = await fetch(`http://127.0.0.1:${port}/support/`, {
+      redirect: "manual",
+    });
+    assert.equal(redirect.status, 308);
+    assert.equal(redirect.headers.get("location"), "/support");
+    const config = JSON.parse(
+      await fs.readFile(path.join(root, "vercel.json"), "utf8"),
+    );
+    assert.ok(
+      !config.rewrites,
+      "Do not turn arbitrary URLs into 200 SPA responses",
+    );
+  } finally {
+    if (child.exitCode === null) {
+      child.kill("SIGTERM");
+      await once(child, "exit");
+    }
+  }
+});

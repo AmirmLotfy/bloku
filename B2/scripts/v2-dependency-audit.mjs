@@ -1,0 +1,20 @@
+import {spawnSync} from 'node:child_process';
+import {mkdir,writeFile} from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const output=path.join(root,'artifacts/maintenance');await mkdir(output,{recursive:true});
+const result=spawnSync('npm',['audit','--json'],{cwd:root,encoding:'utf8',maxBuffer:10_000_000});
+let audit;try{audit=JSON.parse(result.stdout);}catch{throw new Error('npm audit did not produce a valid report');}
+await writeFile(path.join(output,'npm-audit.json'),JSON.stringify(audit,null,2)+'\n');
+if(audit.error||!audit.metadata||!audit.vulnerabilities||result.error||![0,1].includes(result.status))throw new Error('Dependency audit failed to complete');
+const known='https://github.com/advisories/GHSA-mrhx-c7xc-m3w5';
+const exceptionsExpire='2026-12-01T00:00:00Z';
+const leaves=Object.values(audit.vulnerabilities??{}).flatMap(v=>(v.via??[]).filter(v=>typeof v==='object'));
+const unexpected=leaves.filter(v=>v.url!==known||v.severity==='critical');
+if((audit.metadata.vulnerabilities?.total??0)>0&&leaves.length===0)throw new Error('Advisory graph has no reviewable source entries');
+const expired=leaves.length>0&&Date.now()>=Date.parse(exceptionsExpire);
+const report={status:unexpected.length||expired?'REVIEW_REQUIRED':leaves.length?'KNOWN_UPSTREAM_RISK':'NO_REPORTED_ADVISORIES',knownAdvisory:known,exceptionReviewDeadline:exceptionsExpire,advisoryCount:leaves.length,unexpected:unexpected.map(v=>({name:v.name,url:v.url,severity:v.severity})),metadata:audit.metadata};
+await writeFile(path.join(output,'audit-review.json'),JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report));
+if(unexpected.length||expired)process.exitCode=1;

@@ -1,0 +1,55 @@
+:root {
+  color-scheme: light;
+  --font: "Avenir Next", Avenir, "Segoe UI", "Noto Sans", sans-serif;
+  --canvas: #faf8f9;
+  --surface: #fff;
+  --ink: #221b20;
+  --muted: #6d6169;
+  --border: #e5dde2;
+  --brand: #8b1230;
+  --brand-hover: #6f1028;
+  --accent: #8b1230;
+  --focus: #a3284a;
+  --soft: #f3edf0;
+  --selection: #efd2de;
+  --success: #22664a;
+  --privacy-bg: #f2ebef;
+  --visual-bg: #f0e8ec;
+  --visual-line: #ded0d7;
+  --toolbar: #f2edf0;
+  --demo-border: #dacdd4;
+  --dot: #c7b8c0;
+  --paper: #fffdfb;
+  --paper-ink: #34262e;
+  --paper-muted: #74676f;
+  --ad: #f7edf0;
+  --ad-border: #dbc2cd;
+  --switch-off: #bbacb5;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #171216;
+  --surface: #211b20;
+  --ink: #f8f2f5;
+  --muted: #bcafba;
+  --border: #3f333d;
+  --brand: #8b1230;
+  --brand-hover: #a21a3b;
+  --accent: #f398b0;
+  --focus: #f398b0;
+  --soft: #30252d;
+  --selection: #6b2841;
+  --success: #9cd9b7;
+  --privacy-bg: #231a20;
+  --visual-bg: #281d24;
+  --visual-line: #47313d;
+  --toolbar: #2c2229;
+  --demo-border: #51404b;
+  --dot: #65515e;
+  --paper: #241c21;
+  --paper-ink: #f4e9ef;
+  --paper-muted: #baacb5;
+  --ad: #37242d;
+  --ad-border: #634351;
+  --switch-off: #64535d;
+}

@@ -1,0 +1,82 @@
+{
+  "name": "BLOKU",
+  "version": "2.0.0",
+  "siteUrl": "https://bloku.app",
+  "storeUrl": "https://chromewebstore.google.com/detail/mjfieeobdnanclichjahkhkkhlipnigj",
+  "supportEmail": "support@bloku.app",
+  "publisher": "Frameless",
+  "publisherUrl": "https://frameless.com.eg",
+  "sponsorsUrl": null,
+  "locales": [
+    { "code": "en", "tag": "en", "path": "", "dir": "ltr", "label": "English" },
+    {
+      "code": "ar",
+      "tag": "ar",
+      "path": "ar",
+      "dir": "rtl",
+      "label": "العربية"
+    },
+    {
+      "code": "es",
+      "tag": "es",
+      "path": "es",
+      "dir": "ltr",
+      "label": "Español"
+    },
+    {
+      "code": "pt_BR",
+      "tag": "pt-BR",
+      "path": "pt-br",
+      "dir": "ltr",
+      "label": "Português (Brasil)"
+    },
+    {
+      "code": "fr",
+      "tag": "fr",
+      "path": "fr",
+      "dir": "ltr",
+      "label": "Français"
+    },
+    {
+      "code": "de",
+      "tag": "de",
+      "path": "de",
+      "dir": "ltr",
+      "label": "Deutsch"
+    },
+    {
+      "code": "ja",
+      "tag": "ja",
+      "path": "ja",
+      "dir": "ltr",
+      "label": "日本語"
+    },
+    { "code": "hi", "tag": "hi", "path": "hi", "dir": "ltr", "label": "हिन्दी" }
+  ],
+  "features": [
+    {
+      "id": "ad-blocking",
+      "path": "features/ad-blocking",
+      "free": true,
+      "claim": "Block many ads and trackers with packaged browser rules and page cleanup; coverage varies by site."
+    },
+    {
+      "id": "privacy",
+      "path": "features/privacy",
+      "free": true,
+      "claim": "Local controls for tracker blocking and supported privacy protections; no promise of anonymity."
+    },
+    {
+      "id": "distraction-control",
+      "path": "features/distraction-control",
+      "free": true,
+      "claim": "Hide selected page distractions and restore them when needed."
+    },
+    {
+      "id": "focus",
+      "path": "features/focus",
+      "free": true,
+      "claim": "Timed sessions, weekly schedules, and daily site allowances; release requires extension behavior verification."
+    }
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "youtube.com": {
+    "label": "YouTube",
+    "groups": [
+      {
+        "id": "comments",
+        "label": "Comments",
+        "selectors": [
+          "#comments",
+          "ytd-comments"
+        ]
+      },
+      {
+        "id": "shorts",
+        "label": "Shorts",
+        "selectors": [
+          "ytd-reel-shelf-renderer",
+          "ytd-rich-shelf-renderer[is-shorts]",
+          "ytd-rich-section-renderer:has(ytd-reel-shelf-renderer)",
+          "ytd-guide-entry-renderer:has(a[title=\"Shorts\"])",
+          "ytd-mini-guide-entry-renderer[aria-label=\"Shorts\"]",
+          "ytd-guide-entry-renderer:has(a[href^=\"/shorts\"])",
+          "ytd-mini-guide-entry-renderer:has(a[href^=\"/shorts\"])"
+        ]
+      },
+      {
+        "id": "recommendations",
+        "label": "Recommended sidebar",
+        "selectors": [
+          "#related",
+          "ytd-watch-next-secondary-results-renderer"
+        ]
+      },
+      {
+        "id": "homefeed",
+        "label": "Home feed",
+        "selectors": [
+          "ytd-browse[page-subtype=\"home\"] ytd-rich-grid-renderer"
+        ]
+      },
+      {
+        "id": "endscreen",
+        "label": "End-screen suggestions",
+        "selectors": [
+          ".ytp-endscreen-content",
+          ".ytp-ce-element"
+        ]
+      }
+    ]
+  },
+  "x.com": {
+    "label": "X (Twitter)",
+    "groups": [
+      {
+        "id": "trends",
+        "label": "Trends",
+        "selectors": [
+          "div[aria-label=\"Timeline: Trending now\"]",
+          "[data-testid=\"sidebarColumn\"] [data-testid=\"trend\"]"
+        ]
+      },
+      {
+        "id": "whotofollow",
+        "label": "Who to follow",
+        "selectors": [
+          "aside[aria-label=\"Who to follow\"]",
+          "aside[aria-label=\"Relevant people\"]",
+          "[data-testid=\"sidebarColumn\"] [data-testid=\"UserCell\"]"
+        ]
+      },
+      {
+        "id": "sidebar",
+        "label": "Right sidebar",
+        "selectors": [
+          "div[data-testid=\"sidebarColumn\"]"
+        ]
+      }
+    ]
+  },
+  "twitter.com": {
+    "label": "Twitter",
+    "groups": [
+      {
+        "id": "trends",
+        "label": "Trends",
+        "selectors": [
+          "div[aria-label=\"Timeline: Trending now\"]",
+          "[data-testid=\"sidebarColumn\"] [data-testid=\"trend\"]"
+        ]
+      },
+      {
+        "id": "whotofollow",
+        "label": "Who to follow",
+        "selectors": [
+          "aside[aria-label=\"Who to follow\"]",
+          "aside[aria-label=\"Relevant people\"]",
+          "[data-testid=\"sidebarColumn\"] [data-testid=\"UserCell\"]"
+        ]
+      },
+      {
+        "id": "sidebar",
+        "label": "Right sidebar",
+        "selectors": [
+          "div[data-testid=\"sidebarColumn\"]"
+        ]
+      }
+    ]
+  },
+  "facebook.com": {
+    "label": "Facebook",
+    "groups": [
+      {
+        "id": "feed",
+        "label": "News feed",
+        "selectors": [
+          "div[role=\"feed\"]"
+        ]
+      },
+      {
+        "id": "reels",
+        "label": "Reels & short video",
+        "selectors": [
+          "div[aria-label=\"Reels\"]",
+          "div[data-pagelet=\"VideoChaining\"]"
+        ]
+      },
+      {
+        "id": "stories",
+        "label": "Stories",
+        "selectors": [
+          "div[aria-label=\"Stories\"]"
+        ]
+      },
+      {
+        "id": "rightrail",
+        "label": "Right sidebar",
+        "selectors": [
+          "div[data-pagelet=\"RightRail\"]"
+        ]
+      }
+    ]
+  },
+  "reddit.com": {
+    "label": "Reddit",
+    "groups": [
+      {
+        "id": "feed",
+        "label": "Home feed",
+        "selectors": [
+          "shreddit-feed"
+        ]
+      },
+      {
+        "id": "sidebar",
+        "label": "Right sidebar",
+        "selectors": [
+          "#right-sidebar-container"
+        ]
+      }
+    ]
+  },
+  "linkedin.com": {
+    "label": "LinkedIn",
+    "groups": [
+      {
+        "id": "feed",
+        "label": "Feed",
+        "selectors": [
+          "main .scaffold-finite-scroll"
+        ]
+      },
+      {
+        "id": "news",
+        "label": "News & sidebar",
+        "selectors": [
+          "aside.scaffold-layout__aside",
+          ".news-module"
+        ]
+      }
+    ]
+  },
+  "instagram.com": {
+    "label": "Instagram",
+    "groups": [
+      {
+        "id": "explore",
+        "label": "Explore link",
+        "selectors": [
+          "a[href=\"/explore/\"]"
+        ]
+      },
+      {
+        "id": "reels",
+        "label": "Reels link",
+        "selectors": [
+          "a[href=\"/reels/\"]"
+        ]
+      }
+    ]
+  },
+  "twitch.tv": {
+    "label": "Twitch",
+    "groups": [
+      {
+        "id": "recommended",
+        "label": "Recommended channels",
+        "selectors": [
+          "div[aria-label=\"Recommended Channels\"]"
+        ]
+      },
+      {
+        "id": "frontpage",
+        "label": "Front-page carousel",
+        "selectors": [
+          ".front-page-carousel",
+          ".featured-content-carousel"
+        ]
+      }
+    ]
+  },
+  "tiktok.com": {
+    "label": "TikTok",
+    "groups": [
+      {
+        "id": "foryou",
+        "label": "For You feed",
+        "selectors": [
+          "div[data-e2e=\"recommend-list-item-container\"]"
+        ]
+      }
+    ]
+  }
+}

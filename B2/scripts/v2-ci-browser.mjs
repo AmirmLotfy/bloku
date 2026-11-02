@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {appendFile,mkdir,writeFile} from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {Browser,install,resolveBuildId} from '@puppeteer/browsers';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const requested=process.env.BLOKU_CI_CHROME;
+assert.ok(requested&&(/^(stable|beta)$/.test(requested)||/^\d+\.\d+\.\d+\.\d+$/.test(requested)),'Choose a full pinned Chrome version, stable or beta');
+assert.ok(process.env.GITHUB_ENV,'This helper is for the qualification workflow only');
+const buildId=await resolveBuildId(Browser.CHROME,undefined,requested);
+const browser=await install({browser:Browser.CHROME,buildId,cacheDir:path.join(root,'engine/.cache/ci-browser')});
+await appendFile(process.env.GITHUB_ENV,`BLOKU_CHROME_PATH=${browser.executablePath}\n`);
+await mkdir(path.join(root,'artifacts/maintenance'),{recursive:true});
+await writeFile(path.join(root,'artifacts/maintenance/browser.json'),JSON.stringify({requested,buildId,source:'Official Chrome for Testing via pinned @puppeteer/browsers'},null,2)+'\n');
+console.log(`Resolved official Chrome ${buildId}`);

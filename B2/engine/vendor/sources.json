@@ -1,0 +1,85 @@
+{
+  "revision": "d394c08f96db93677910d7ae07a0fc808548ad15",
+  "lists": [
+    {
+      "id": "base",
+      "filterId": 2,
+      "name": "AdGuard Base",
+      "source": "platforms/extension/chromium-mv3/filters/2.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/2.txt",
+      "sha256": "46240345be1dd5cd4d1134170877d036fed9db4b8bf33bbcdff89c4eb47a11dc"
+    },
+    {
+      "id": "privacy",
+      "filterId": 3,
+      "name": "AdGuard Tracking Protection",
+      "source": "platforms/extension/chromium-mv3/filters/3.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/3.txt",
+      "sha256": "71aa3d89ed802669e7106f0e200a727c6d333f045605712b450837fcb393ce32"
+    },
+    {
+      "id": "base-optimized",
+      "filterId": 20002,
+      "name": "AdGuard Base — optimized, lower capacity",
+      "source": "platforms/extension/chromium-mv3/filters/2_optimized.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/2_optimized.txt",
+      "sha256": "f983e6a600482da0ed0c8a2d9953f82f33184f04223648f6d39bf7cf0d999425"
+    },
+    {
+      "id": "region-ar",
+      "filterId": 112,
+      "name": "Arabic — Liste AR",
+      "source": "platforms/extension/chromium-mv3/filters/112.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/112.txt",
+      "sha256": "557cd2ba458a98b05c6f5a15e2487f072dd39fd9b7c59c2138f3fcab5f3efbda"
+    },
+    {
+      "id": "region-de",
+      "filterId": 6,
+      "name": "AdGuard German",
+      "source": "platforms/extension/chromium-mv3/filters/6.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/6.txt",
+      "sha256": "32fe8e4bc594c9fcfe9b46972a3f8781e17db74f83b6e1d8d2b742f0b2762231"
+    },
+    {
+      "id": "region-ja",
+      "filterId": 7,
+      "name": "AdGuard Japanese",
+      "source": "platforms/extension/chromium-mv3/filters/7.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/7.txt",
+      "sha256": "432cabf0629169b723f6eccb95142e1197f7a43612838ebdae5be09bf5562f4a"
+    },
+    {
+      "id": "region-es-pt",
+      "filterId": 9,
+      "name": "AdGuard Spanish/Portuguese",
+      "source": "platforms/extension/chromium-mv3/filters/9.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/9.txt",
+      "sha256": "9899c5abcffa7a1ec633b7e0d63e7723a516dd36f0160e23e5c884219ff74b2c"
+    },
+    {
+      "id": "region-fr",
+      "filterId": 16,
+      "name": "AdGuard French",
+      "source": "platforms/extension/chromium-mv3/filters/16.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/16.txt",
+      "sha256": "de780b043ca8d2bb10ad416f5449a1e0df8130cb58bb8bb244886ddef89b1189"
+    },
+    {
+      "id": "region-hi",
+      "filterId": 253,
+      "name": "Hindi — IndianList",
+      "source": "platforms/extension/chromium-mv3/filters/253.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/253.txt",
+      "sha256": "576b3e7221b1df5ad9b0767a3c59253f45d77c11ec66d3ac55e1a2f5a10672d3"
+    },
+    {
+      "id": "annoyances",
+      "filterId": 21,
+      "name": "AdGuard Other Annoyances",
+      "source": "platforms/extension/chromium-mv3/filters/21.txt",
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/d394c08f96db93677910d7ae07a0fc808548ad15/platforms/extension/chromium-mv3/filters/21.txt",
+      "sha256": "4d4bc1aaf6c16d16cab611329b5c902902a0565dd6f66a178940308ce4926e56"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+! Bloku engine acceptance fixtures. Never included in a release package.
+||ad.bloku-ads.test^$script,third-party
+||tracker.bloku-track.test^$image,domain=site.bloku.test
+||ad.bloku-ads.test^*/allowed.js$script
+@@||ad.bloku-ads.test^*/allowed.js$script,domain=site.bloku.test
+||scoped.bloku.test^$script,~image
+@@||focus.bloku.test^$document,important
+@@||parent.bloku.test^$document,important
+||redirect-focus.bloku.test^$important,redirect=nooptext
+site.bloku.test##.bloku-cosmetic-fixture
+site.bloku.test#%#window.blokuPackagedScriptRan = true;
+site.bloku.test#%#//scriptlet('set-constant', 'blokuPackagedScriptletRan', 'true')
