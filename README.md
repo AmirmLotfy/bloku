@@ -1,40 +1,63 @@
-# BLOKU 2.0
+# BLOKU
 
-Free ad blocking and distraction control for Chrome desktop 145+. No account, license, subscription or paid feature tier. Published by [Frameless](https://frameless.com.eg) under GPL-3.0-only; the BLOKU name/logo remain brand assets.
+**A quieter browser. More room to focus.**
 
-The full website is live at https://bloku.app. Version 2.0.0 is publicly available in the Chrome Web Store. Test evidence is bounded to its recorded browser and package hashes; it does not establish universal site compatibility, native-speaker acceptance or a performance ranking. See docs/PUBLISHED_20261104.md for the publication checkpoint and remaining limits.
+Free, open-source ad blocking and distraction control for Chrome desktop 145+. All features are free. No account, subscription or paid feature tier.
 
-## Build the extension
+[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mjfieeobdnanclichjahkhkkhlipnigj) · [Visit bloku.app](https://bloku.app) · [Get help](https://bloku.app/support)
 
-Use Node 22.12+ and npm. The lockfile and packaged filter sources are pinned.
+![BLOKU protection settings](website/public/product/en/01-protection.jpg)
+
+## What it does
+
+- Block many ads and trackers with packaged filters, including optional regional and annoyance lists.
+- Pause ad blocking for a site, hide individual elements and restore saved hides.
+- Hide selected feeds, short videos and other page distractions with site presets.
+- Set focus sessions, weekly schedules and daily site allowances.
+- Choose supported cookie-rejection flows, clicked-link cleanup and local privacy controls.
+- Use English, Arabic, Spanish, Brazilian Portuguese, French, German, Japanese or Hindi, with light and dark themes.
+
+Filtering coverage varies by site and Chrome rule capacity. Focus controls are user-controlled. Settings and activity are processed locally; the extension has no telemetry. See the [privacy policy](extension/PRIVACY.md).
+
+## Build from source
+
+Use **Node.js 22.12+** and npm. Run these commands from the repository root; each project has its own pinned lockfile.
+
+**Extension**
 
 ```sh
-cd B2
-npm ci
-npm run build:v2
-npm run typecheck
-npm run test:foundation
-npm run test:engine
+npm ci --prefix extension
+npm run build --prefix extension
+npm run check --prefix extension
 ```
 
-Load `B2/dist` as an unpacked extension. The build manifest is `B2/v2-manifest.json`; legacy 1.1.3 files in the development checkout are baseline material only and are excluded from the public source/submission archives. See [the extension README](B2/README.md) for architecture, filter maintenance and browser qualification. Public source archives select only audited v2 inputs; they contain no backend, environment files or development caches.
+In Chrome, open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `extension/dist`.
 
-Features include packaged ad/tracker filters, regional/annoyance choices, per-site ad pauses, distraction presets, editable element hides, focus profiles/sessions/schedules/allowances, optional supported cookie rejection, clicked-link cleanup and local data controls. All eight languages are included. The limited privacy-preference option is DOM-only: it does not send the Sec-GPC HTTP header and is not complete GPC support.
+**Website**
 
-## Upstream work and licenses
+```sh
+npm ci --prefix website
+npm run check --prefix website
+npm run preview --prefix website
+```
 
-- [AdGuard filtering libraries](https://github.com/AdguardTeam/tsurlfilter): the stock SDK and official MV3 converter; no competing filter parser or DNR writer.
-- [AdGuard FiltersRegistry](https://github.com/AdguardTeam/FiltersRegistry): pinned source text, hashes and license headers in `B2/engine/vendor`.
-- [DuckDuckGo Autoconsent](https://github.com/duckduckgo/autoconsent): packaged supported opt-out flows, MPL-2.0, with no generic privileged evaluation bridge.
+Open [localhost:4173](http://localhost:4173). The website builds localized static pages with React and Vite.
 
-Exact dependency versions, package URLs and integrity hashes are in `B2/package-lock.json`; the build produces an SBOM and license notices. Install obtains those pinned packages; regular filter builds use the bundled source inputs without fetching new lists. Review [upstream dependency limitations](B2/engine/INTEGRATION.md), including the inherited Zod advisory, before qualification. A clean security audit is not claimed.
+## Repository
 
-## Website and releases
+| Directory | Contents |
+| --- | --- |
+| [`extension/`](extension/) | Chrome extension, filtering engine, tests and pinned filter sources |
+| [`website/`](website/) | Marketing website, translations and public assets |
+| [`shared/`](shared/) | Product metadata shared with the website |
+| [`docs/`](docs/) | Architecture and filter maintenance |
 
-The React/Vite marketing source is in `Bloku-Website`, distributed separately from the extension source archive. It generates static localized HTML and uses no website analytics script. Keep public promotion aligned with the Store version. Optional donations remain hidden until a verified destination is configured, and never unlock features.
+See the [extension guide](extension/README.md), [website guide](website/README.md), [contribution guide](CONTRIBUTING.md), [security policy](SECURITY.md) and [changelog](CHANGELOG.md).
 
-[Release notes](docs/RELEASE_NOTES.md), [migration/backup behavior](docs/MIGRATION_REPORT.md), [artifact checks](docs/RELEASE_ARTIFACTS.md), [Store reviewer material](docs/STORE_RELEASE.md), and [maintenance](docs/MAINTENANCE.md) document the candidate and remaining limits. The prepared CI performs checks only; it never deploys or submits a release.
+## Open source
 
-Website: https://bloku.app · Support: support@bloku.app
+Made by [Frameless](https://frameless.com.eg). BLOKU software is licensed under [GPL-3.0-only](LICENSE). The BLOKU name and artwork remain Frameless brand assets.
 
-Historical1.1.3 runtime, policies and scripts are isolated under `legacy/v1.1.3` in the private development checkout; the extension source directory intentionally has no legacy root manifest. Build and load `B2/dist` only. Public corresponding source excludes historical material.
+Built with [AdGuard filtering libraries](https://github.com/AdguardTeam/tsurlfilter), pinned [AdGuard FiltersRegistry sources](https://github.com/AdguardTeam/FiltersRegistry) and [DuckDuckGo Autoconsent](https://github.com/duckduckgo/autoconsent). Upstream components retain their licenses; see [third-party notices](extension/NOTICE.md). Optional support through the website never unlocks features.
+
+Support: [support@bloku.app](mailto:support@bloku.app)
