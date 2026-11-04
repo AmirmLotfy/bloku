@@ -160,9 +160,9 @@ test("no legacy checkout, analytics, fabricated rating, search schema, or unexpe
         (item) => item["@type"] === "SoftwareApplication",
       );
       assert.equal(software.offers.price, "0");
-      assert.equal(software.downloadUrl, undefined, "Do not advertise a 2.0 download while Store approval is pending");
-      assert.equal(software.offers.availability, "https://schema.org/PreOrder");
-      assert.match(software.creativeWorkStatus, /approval pending/);
+      assert.equal(software.downloadUrl, product.storeUrl);
+      assert.equal(software.offers.availability, "https://schema.org/InStock");
+      assert.equal(software.creativeWorkStatus, "Published");
     }
     if (route.page === "bye")
       assert.equal(
@@ -173,15 +173,14 @@ test("no legacy checkout, analytics, fabricated rating, search schema, or unexpe
   }
 });
 
-test("each locale clearly distinguishes the 2.0 website from the currently available Store version", () => {
+test("all locales offer the published release without obsolete waiting notices", () => {
   for (const route of manifest) {
     const doc = documents.get(route.path);
     const notice = doc.querySelector('.release-availability');
-    assert.ok(notice?.textContent.includes('1.1.3'), route.path);
-    assert.ok(notice.textContent.includes('2.0'), route.path);
-    assert.ok(notice.textContent.includes('Google'), route.path);
+    assert.equal(notice, null, route.path);
+    assert.ok(!doc.body.textContent.includes('1.1.3'), route.path);
     for (const action of doc.querySelectorAll(`a.button[href="${product.storeUrl}"]`))
-      assert.ok(![copies[route.locale].nav.install, copies[route.locale].bye.reinstall].includes(action.textContent.trim()), route.path);
+      assert.ok([copies[route.locale].nav.install, copies[route.locale].bye.reinstall].includes(action.textContent.trim()), route.path);
     if (route.page === 'privacy') {
       assert.equal(doc.querySelectorAll('.document-sections section').length, 8);
       assert.ok(doc.querySelector('.document-sections').textContent.includes('support@bloku.app'));

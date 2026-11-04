@@ -16,7 +16,6 @@ import {
   LockKeyhole,
 } from "lucide-react";
 import product from "../../shared/product.json";
-import { releaseStatus } from "./content/release-status";
 import legacyPrivacy from "./content/legacy-privacy.json";
 import { localeInfo, pagePath } from "./routes";
 import type { Copy, LocaleCode, PageContext, PageId, Section } from "./types";
@@ -48,10 +47,10 @@ function Logo({ compact = false }: { compact?: boolean }) {
 }
 
 function Install({
-  locale,
+  label,
   secondary = false,
 }: {
-  locale: LocaleCode;
+  label: string;
   secondary?: boolean;
 }) {
   return (
@@ -62,7 +61,7 @@ function Install({
       rel="noopener noreferrer"
     >
       <ChromeIcon />
-      {releaseStatus[locale].storeAction}
+      {label}
       <ArrowRight size={16} aria-hidden="true" />
     </a>
   );
@@ -183,7 +182,7 @@ function Header({ locale, page, copy }: PageContext) {
             )}
           </button>
           <div className="header-install">
-            <Install locale={locale} />
+            <Install label={copy.nav.install} />
           </div>
           <button
             ref={menuButton}
@@ -212,7 +211,7 @@ function Header({ locale, page, copy }: PageContext) {
             {link.label}
           </a>
         ))}
-        <Install locale={locale} />
+        <Install label={copy.nav.install} />
       </nav>
     </header>
   );
@@ -416,7 +415,7 @@ function FeatureList({ locale, copy }: PageContext) {
     </section>
   );
 }
-function CTA({ copy, locale }: { copy: Copy; locale: LocaleCode }) {
+function CTA({ copy }: { copy: Copy }) {
   return (
     <section className="cta-section wrap">
       <div className="cta-symbol" aria-hidden="true">
@@ -424,7 +423,7 @@ function CTA({ copy, locale }: { copy: Copy; locale: LocaleCode }) {
       </div>
       <h2>{copy.home.ctaTitle}</h2>
       <p>{copy.home.ctaBody}</p>
-      <Install locale={locale} />
+      <Install label={copy.nav.install} />
       <span className="cta-note">
         {copy.home.free} <span>·</span> {copy.home.noAccount}
       </span>
@@ -453,7 +452,7 @@ function Home(context: PageContext) {
           </h1>
           <p className="hero-intro">{copy.home.intro}</p>
           <div className="hero-actions">
-            <Install locale={locale} />
+            <Install label={copy.nav.install} />
             <a className="button button-quiet" href="#demo">
               {copy.home.secondary}
               <ArrowDown size={16} aria-hidden="true" />
@@ -520,7 +519,7 @@ function Home(context: PageContext) {
         </div>
         <FAQ items={copy.home.faq} />
       </section>
-      <CTA copy={copy} locale={locale} />
+      <CTA copy={copy} />
     </>
   );
 }
@@ -571,7 +570,7 @@ function FeaturePage(context: PageContext) {
           <ArrowRight size={17} aria-hidden="true" />
         </a>
       </section>
-      <CTA copy={context.copy} locale={context.locale} />
+      <CTA copy={context.copy} />
     </>
   );
 }
@@ -730,7 +729,7 @@ function SmallPage({ page, copy, locale }: PageContext) {
           {copy.bye.data}{" "}
           <a href={pagePath(locale, "privacy")}>{copy.nav.privacy}</a>
         </p>
-        <Install locale={locale} secondary />
+        <Install label={copy.bye.reinstall} secondary />
       </section>
     );
   if (page === "changelog")
@@ -826,10 +825,6 @@ export default function App(context: PageContext) {
         {context.copy.nav.skip}
       </a>
       <Header {...context} />
-      <aside className="release-availability wrap" aria-labelledby="release-availability-title">
-        <p id="release-availability-title"><strong>{releaseStatus[context.locale].title}</strong></p>
-        <p>{releaseStatus[context.locale].body}</p>
-      </aside>
       <main id="main-content" tabIndex={-1}>
         {context.page === "home" ? (
           <Home {...context} />

@@ -89,9 +89,10 @@ export function render(locale: LocaleCode, page: PageId) {
           isAccessibleForFree: true,
           license: `${product.sourceUrl}/blob/main/LICENSE`,
           url: product.siteUrl,
-          creativeWorkStatus: "Pre-release: Chrome Web Store approval pending",
+          creativeWorkStatus: "Published",
+          downloadUrl: product.storeUrl,
           description,
-          offers: { "@type": "Offer", price: "0", priceCurrency: "USD", availability: "https://schema.org/PreOrder" },
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD", availability: "https://schema.org/InStock" },
           publisher: {
             "@type": "Organization",
             name: product.publisher,

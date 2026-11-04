@@ -2,7 +2,7 @@
 
 Free ad blocking and distraction control for Chrome desktop 145+. No account, license, subscription or paid feature tier. Published by [Frameless](https://frameless.com.eg) under GPL-3.0-only; the BLOKU name/logo remain brand assets.
 
-The full website is live at https://bloku.app. Version 2.0.0 is submitted to the Chrome Web Store with automatic publication after approval; the Store currently distributes 1.1.3. This tree is a release candidate. Test evidence is bounded to its recorded browser and package hashes; it does not establish universal site compatibility, native-speaker acceptance or a performance ranking. See docs/DEPLOYMENT_20261102.md for the release checkpoint and remaining limits.
+The full website is live at https://bloku.app. Version 2.0.0 is publicly available in the Chrome Web Store. Test evidence is bounded to its recorded browser and package hashes; it does not establish universal site compatibility, native-speaker acceptance or a performance ranking. See docs/PUBLISHED_20261104.md for the publication checkpoint and remaining limits.
 
 ## Build the extension
 
