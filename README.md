@@ -4,7 +4,7 @@
 
 Free, open-source ad blocking and distraction control for Chrome desktop 145+. All features are free. No account, subscription or paid feature tier.
 
-[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mjfieeobdnanclichjahkhkkhlipnigj) · [Visit bloku.app](https://bloku.app) · [Get help](https://bloku.app/support)
+[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mjfieeobdnanclichjahkhkkhlipnigj) · [Visit bloku.app](https://bloku.app) · [Get help](https://bloku.app/support) · [☕ Buy me a coffee](https://www.paypal.com/ncp/payment/H2Y4B9EM6CF5C)
 
 ![BLOKU protection settings](website/public/product/en/01-protection.jpg)
 
@@ -61,3 +61,7 @@ Made by [Frameless](https://frameless.com.eg). BLOKU software is licensed under 
 Built with [AdGuard filtering libraries](https://github.com/AdguardTeam/tsurlfilter), pinned [AdGuard FiltersRegistry sources](https://github.com/AdguardTeam/FiltersRegistry) and [DuckDuckGo Autoconsent](https://github.com/duckduckgo/autoconsent). Upstream components retain their licenses; see [third-party notices](extension/NOTICE.md). Optional support through the website never unlocks features.
 
 Support: [support@bloku.app](mailto:support@bloku.app)
+
+## Support BLOKU
+
+[☕ Buy me a coffee via PayPal](https://www.paypal.com/ncp/payment/H2Y4B9EM6CF5C). Choose your own one-time amount. Support is optional; every feature stays free.
